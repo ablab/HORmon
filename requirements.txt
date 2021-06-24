@@ -1,0 +1,6 @@
+biopython
+clustalo
+joblib
+python-edlib
+setuptools
+stringdecomposer
