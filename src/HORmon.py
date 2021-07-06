@@ -5,6 +5,7 @@ import argparse
 
 import HORmon_pipeline.utils as utils
 import HORmon_pipeline.ExtractValuableMonomers as ValMon
+import HORmon_pipeline.MergeAndSplitMonomers as MergeSplit
 
 def parse_args():
     parser = argparse.ArgumentParser(description="HORmon: updating monomers to make it consistent with CE postulate, and canonical HOR inferencing")
@@ -33,6 +34,11 @@ def main():
 
     valMon, valMonPath = getValuableMonomers(args)
 
+    mergeSplDir = os.path.join(args.outdir, "merge_split")
+    if (not os.path.exists(mergeSplDir)):
+        os.makedirs(mergeSplDir)
+
+    mon, mon_path = MergeSplit.MergeSplitMonomers(valMonPath, args.seq, mergeSplDir, args.threads)
 
 if __name__ == "__main__":
     main()

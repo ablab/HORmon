@@ -77,5 +77,4 @@ def getValuableMonomers(path_seq, tsv_res, CAmn, odir):
 
     vmn_path = os.path.join(odir, "valuable_mn.fa")
     utils.savemn(vmn_path, MonomersNew)
-    print(MonomersNew, vmn_path)
     return MonomersNew, vmn_path
