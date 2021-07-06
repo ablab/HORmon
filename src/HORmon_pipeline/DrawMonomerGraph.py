@@ -87,3 +87,4 @@ def BuildMonomerGraph(path_to_mn, sdout, nodeThr=100, edgeThr="auto"):
 def BuildAndDrawMonomerGraph(path_to_mn, sdout, outdir, nodeThr=100, edgeThr="auto"):
     G = BuildMonomerGraph(path_to_mn, sdout, nodeThr=nodeThr, edgeThr=edgeThr)
     DrawMonomerGraph(G, outdir)
+    return G

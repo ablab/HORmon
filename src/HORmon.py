@@ -7,6 +7,7 @@ import HORmon_pipeline.utils as utils
 import HORmon_pipeline.ExtractValuableMonomers as ValMon
 import HORmon_pipeline.MergeAndSplitMonomers as MergeSplit
 import HORmon_pipeline.DrawMonomerGraph as dmg
+import HORmon_pipeline.DetectHOR as DetectHOR
 
 def parse_args():
     parser = argparse.ArgumentParser(description="HORmon: updating monomers to make it consistent with CE postulate, and canonical HOR inferencing")
@@ -43,7 +44,10 @@ def main():
 
     mon, mon_path = MergeSplit.MergeSplitMonomers(valMonPath, args.seq, mergeSplDir, args.threads)
     MonDir = os.path.dirname(mon_path)
-    dmg.BuildAndDrawMonomerGraph(mon_path, os.path.join(MonDir, "fdec.tsv"), MonDir, nodeThr=0, edgeThr=10)
+    G = dmg.BuildAndDrawMonomerGraph(mon_path, os.path.join(MonDir, "fdec.tsv"), MonDir, nodeThr=0, edgeThr=10)
+
+    DetectHOR.detectHORs(mon_path, os.path.join(MonDir, "fdec.tsv"), args.outdir, G)
+
 
 if __name__ == "__main__":
     main()
