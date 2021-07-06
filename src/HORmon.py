@@ -6,6 +6,7 @@ import argparse
 import HORmon_pipeline.utils as utils
 import HORmon_pipeline.ExtractValuableMonomers as ValMon
 import HORmon_pipeline.MergeAndSplitMonomers as MergeSplit
+import HORmon_pipeline.DrawMonomerGraph as dmg
 
 def parse_args():
     parser = argparse.ArgumentParser(description="HORmon: updating monomers to make it consistent with CE postulate, and canonical HOR inferencing")
@@ -33,12 +34,16 @@ def main():
     args.seq = os.path.realpath(args.seq)
 
     valMon, valMonPath = getValuableMonomers(args)
+    valMonDir = os.path.dirname(valMonPath)
+    dmg.BuildAndDrawMonomerGraph(valMon, os.path.join(valMonDir, "final_decomposition.tsv"), valMonDir, nodeThr=0, edgeThr=10)
 
     mergeSplDir = os.path.join(args.outdir, "merge_split")
     if (not os.path.exists(mergeSplDir)):
         os.makedirs(mergeSplDir)
 
     mon, mon_path = MergeSplit.MergeSplitMonomers(valMonPath, args.seq, mergeSplDir, args.threads)
+    MonDir = os.path.dirname(mon_path)
+    dmg.BuildAndDrawMonomerGraph(mon_path, os.path.join(MonDir, "fdec.tsv"), MonDir, nodeThr=0, edgeThr=10)
 
 if __name__ == "__main__":
     main()

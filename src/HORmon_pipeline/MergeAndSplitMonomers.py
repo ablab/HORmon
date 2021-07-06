@@ -208,4 +208,4 @@ def MergeSplitMonomers(mns_path, seq_path, outdir, thr):
                              str(utils.blocks_sqmean(seq_path, tsv_res , finalm)),
                              str(utils.DaviesBouldinIndex(seq_path, tsv_res , finalm))])
 
-    return finalm, mns_path
+    return finalm, os.path.join(outdir, "mn.fa")
