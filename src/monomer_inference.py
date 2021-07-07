@@ -98,6 +98,9 @@ def parse_args():
                                                                     "When maximum size of cluster will be less "\
                                                                     "MIN_CLST the monomer inferense will finished "\
                                                                     "[default=2]")
+    parser.add_argument('--oneCluster', '--add-one-cluster',
+                        help='add only one cluster at each iteration [default=False]', action='store_true')
+
     return parser.parse_args()
 
 
@@ -411,7 +414,7 @@ def clustering(blocks, args):
             max_clst.append(clusters[i])
 
     log.log("Max cluster is found! Cluster size: " + str(len(max_clst[0])))
-    return max_clst
+    return max_clst[:1] if args.oneCluster else max_clst
 
 
 def save_seqs(max_cluster, cluster_seqs_path):
