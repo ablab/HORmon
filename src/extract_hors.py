@@ -3,6 +3,8 @@ from Bio import SeqIO
 from Bio import SearchIO
 from Bio.SeqRecord import SeqRecord
 
+from collections import OrderedDict
+
 import sys
 import os
 from os import listdir
@@ -13,10 +15,18 @@ import logging
 
 import re
 
-sd_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-print(sd_path)
-sys.path.append(sd_path)
-from sd.utils.bio import read_bio_seqs
+
+def read_bio_seqs(filename):
+    form = filename.split('.')[-1]
+    if form == 'fa' or form == 'fna':
+        form = 'fasta'
+    elif form == 'fq':
+        form = 'fastq'
+    raw_seqs = SeqIO.parse(filename, format=form)
+    seqs = OrderedDict()
+    for seq in raw_seqs:
+        seqs[seq.id] = str(seq.seq)
+    return seqs
 
 logger = logging.getLogger("SD.scripts.extract_hors")
 
