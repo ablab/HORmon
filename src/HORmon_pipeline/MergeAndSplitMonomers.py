@@ -149,8 +149,7 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1):
         return bstm, bp
 
     bstm, bp = get_best(posscore)
-
-    if bp > 0.3:
+    if bp > 0.4:
         cntMerge += 1
         resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path)
         utils.savemn(os.path.join(odir, "mn.fa"), resmn)
@@ -158,7 +157,7 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1):
 
     posscore, cenvec = TriplesMatrix.PrefixPosScore(k_cnt[2], k_cnt[1], thr=0)
     bstm, bp = get_best(posscore)
-    if bp > 0.3:
+    if bp > 0.4:
         cntMerge += 1
         resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path)
         utils.savemn(os.path.join(odir, "mn.fa"), resmn)
@@ -166,7 +165,7 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1):
 
     posscore, cenvec = TriplesMatrix.SuffixPosScore(k_cnt[2], k_cnt[1], thr=0)
     bstm, bp = get_best(posscore)
-    if bp > 0.3:
+    if bp > 0.4:
         cntMerge += 1
         resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path)
         utils.savemn(os.path.join(odir, "mn.fa"), resmn)

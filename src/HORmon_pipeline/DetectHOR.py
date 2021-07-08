@@ -33,11 +33,14 @@ def genAllCycles(G):
     return cycleList
 
 
-def filterCycles(cycles):
+def filterCycles(cycles, hybridSet):
     usedV = set()
     cycles.sort(key=lambda x: -len(x))
     res_cyc = []
     for cl in cycles:
+        if len([v for v in cl if v in hybridSet]) > 0:
+            continue
+
         for v in cl:
             if v not in usedV:
                 res_cyc.append(cl)
@@ -46,10 +49,10 @@ def filterCycles(cycles):
     return res_cyc
 
 
-def detectHORs(mon_path, sd_path, outdir, G):
+def detectHORs(mon_path, sd_path, outdir, G, hybridSet):
     mncen = utils.get_monocent(sd_path)
     cycles = genAllCycles(G)
-    cycles = filterCycles(cycles)
+    cycles = filterCycles(cycles, hybridSet)
     with open(os.path.join(outdir, "HORs.tsv"), "w") as fw:
         csv_writer = csv.writer(fw, delimiter='\t')
         horid = 1

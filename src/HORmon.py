@@ -8,6 +8,7 @@ import HORmon_pipeline.ExtractValuableMonomers as ValMon
 import HORmon_pipeline.MergeAndSplitMonomers as MergeSplit
 import HORmon_pipeline.DrawMonomerGraph as dmg
 import HORmon_pipeline.DetectHOR as DetectHOR
+import HORmon_pipeline.Hybrid as hybrid
 
 def parse_args():
     parser = argparse.ArgumentParser(description="HORmon: updating monomers to make it consistent with CE postulate, and canonical HOR inferencing")
@@ -46,8 +47,9 @@ def main():
     MonDir = os.path.dirname(mon_path)
     G = dmg.BuildAndDrawMonomerGraph(mon_path, os.path.join(MonDir, "fdec.tsv"), MonDir, nodeThr=0, edgeThr=10)
 
-    DetectHOR.detectHORs(mon_path, os.path.join(MonDir, "fdec.tsv"), args.outdir, G)
-
+    hybridSet = hybrid.getHybridINFO(mon_path, os.path.join(MonDir, "fdec.tsv"))
+    print("Hybrid: ", hybridSet)
+    DetectHOR.detectHORs(mon_path, os.path.join(MonDir, "fdec.tsv"), args.outdir, G, hybridSet)
 
 if __name__ == "__main__":
     main()
