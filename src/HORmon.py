@@ -9,6 +9,7 @@ import HORmon_pipeline.MergeAndSplitMonomers as MergeSplit
 import HORmon_pipeline.DrawMonomerGraph as dmg
 import HORmon_pipeline.DetectHOR as DetectHOR
 import HORmon_pipeline.Hybrid as hybrid
+import HORmon_pipeline.ElCycleDecomposition as elCycl
 
 def parse_args():
     parser = argparse.ArgumentParser(description="HORmon: updating monomers to make it consistent with CE postulate, and canonical HOR inferencing")
@@ -37,19 +38,35 @@ def main():
 
     valMon, valMonPath = getValuableMonomers(args)
     valMonDir = os.path.dirname(valMonPath)
-    dmg.BuildAndDrawMonomerGraph(valMon, os.path.join(valMonDir, "final_decomposition.tsv"), valMonDir, nodeThr=0, edgeThr=10)
+
+    if (not os.path.exists(os.path.join(args.outdir, "init"))):
+        os.makedirs(os.path.join(args.outdir, "init"))
+    dmg.BuildAndDrawMonomerGraph(args.mon, os.path.join(valMonDir, "final_decomposition.tsv"),
+                                 os.path.join(args.outdir, "init"), nodeThr=0,edgeThr=10)
 
     mergeSplDir = os.path.join(args.outdir, "merge_split")
     if (not os.path.exists(mergeSplDir)):
         os.makedirs(mergeSplDir)
 
     mon, mon_path = MergeSplit.MergeSplitMonomers(valMonPath, args.seq, mergeSplDir, args.threads)
+
     MonDir = os.path.dirname(mon_path)
+    dmg.BuildAndDrawMonomerGraph(valMon, os.path.join(MonDir, "i0", "InitSD", "final_decomposition.tsv"), valMonDir, nodeThr=0,
+                                 edgeThr=10)
     G = dmg.BuildAndDrawMonomerGraph(mon_path, os.path.join(MonDir, "fdec.tsv"), MonDir, nodeThr=0, edgeThr=10)
 
     hybridSet = hybrid.getHybridINFO(mon_path, os.path.join(MonDir, "fdec.tsv"))
     print("Hybrid: ", hybridSet)
-    DetectHOR.detectHORs(mon_path, os.path.join(MonDir, "fdec.tsv"), args.outdir, G, hybridSet)
+
+    fdec = os.path.join(MonDir, "fdec.tsv")
+    eDir = elCycl.ElCycleSplit(mon_path, args.seq, fdec, args.outdir, G, hybridSet)
+    if eDir is not None:
+        mon_path = os.path.join(eDir, "mn.fa")
+        fdec = os.path.join(eDir, "final_decomposition.tsv")
+        G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, eDir, nodeThr=0, edgeThr=10)
+        hybridSet = hybrid.getHybridINFO(mon_path, fdec)
+
+    DetectHOR.detectHORs(mon_path, fdec, args.outdir, G, hybridSet)
 
 if __name__ == "__main__":
     main()

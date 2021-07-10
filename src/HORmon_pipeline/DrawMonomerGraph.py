@@ -56,13 +56,13 @@ def buildk_graph(kcnt1, kcnt2, k=1, nodeThr=100, edgeThr=100):
             if (*vt1, vt2[-1]) in kcnt2:
                 scr = kcnt2[(*vt1, vt2[-1])]
 
-            thr_wg = [200, 100, 50, 25, 1] #[100000000, 1000, 500, 100, 1]
+            thr_wg = [20000, 100, 50, 25, 1] #[100000000, 1000, 500, 100, 1]
             wgs = [7, 5, 3, 1, 0]
             wg = 3
-            while (scr > thr_wg[wg]):
+            while (scr > thr_wg[wg] and wg > 0):
                 wg -= 1
 
-            if scr > nodeThr:
+            if scr > edgeThr:
                 ecnt += 1
                 vrt1 = "-".join(list(vt1))
                 vrt2 = "-".join(list(vt2))

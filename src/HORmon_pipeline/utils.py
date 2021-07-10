@@ -97,6 +97,8 @@ def load_fasta(filename):
     return list(SeqIO.parse(filename, "fasta"))
 
 def run_SD(pathToMon, seqPath, outName, thr):
+    #return os.path.join(outName, "final_decomposition.tsv")
+
     os.makedirs(outName, exist_ok=True)
     pathToMon =  os.path.abspath(pathToMon)
     seqPath =  os.path.abspath(seqPath)

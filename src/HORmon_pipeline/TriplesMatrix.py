@@ -208,7 +208,7 @@ def SplitAllMn(trp_cnt, db_cnt, thr=1):
                         continue
                     bst = bst_lst[j]
                     if ((j < i and Trp[bst[0]][bst[1]] < 8 * Trp[scb[0]][scb[1]]) or
-                       (i < j and Trp[bst[0]][bst[1]] * 8 > Trp[scb[0]][scb[1]])):
+                        (i < j and Trp[bst[0]][bst[1]] * 8 > Trp[scb[0]][scb[1]])):
                         if bst[0] == scb[0] or bst[1] == scb[1]:
                             print("DEPEND", mn, mnlist[bst[0]], mnlist[bst[1]], mnlist[scb[0]], mnlist[scb[1]])
                             isIndependent = False

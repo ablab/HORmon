@@ -51,6 +51,9 @@ def filterCycles(cycles, hybridSet):
 
 def detectHORs(mon_path, sd_path, outdir, G, hybridSet):
     mncen = utils.get_monocent(sd_path)
+    with open(os.path.join(outdir, "Monocen"), "w") as fw:
+        fw.write(str(mncen))
+
     cycles = genAllCycles(G)
     cycles = filterCycles(cycles, hybridSet)
     with open(os.path.join(outdir, "HORs.tsv"), "w") as fw:
