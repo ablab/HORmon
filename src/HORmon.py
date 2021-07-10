@@ -10,6 +10,8 @@ import HORmon_pipeline.DrawMonomerGraph as dmg
 import HORmon_pipeline.DetectHOR as DetectHOR
 import HORmon_pipeline.Hybrid as hybrid
 import HORmon_pipeline.ElCycleDecomposition as elCycl
+import HORmon_pipeline.RenameMonomers as rename
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="HORmon: updating monomers to make it consistent with CE postulate, and canonical HOR inferencing")
@@ -29,6 +31,7 @@ def getValuableMonomers(args):
     valDec = utils.run_SD(args.mon, args.seq, ValMonDir, args.threads)
     initMon = utils.load_fasta(args.mon)
     return ValMon.getValuableMonomers(args.seq, valDec, initMon, ValMonDir)
+
 
 def main():
     args = parse_args()
@@ -55,7 +58,7 @@ def main():
                                  edgeThr=10)
     G = dmg.BuildAndDrawMonomerGraph(mon_path, os.path.join(MonDir, "fdec.tsv"), MonDir, nodeThr=0, edgeThr=10)
 
-    hybridSet = hybrid.getHybridINFO(mon_path, os.path.join(MonDir, "fdec.tsv"))
+    hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, os.path.join(MonDir, "fdec.tsv"))
     print("Hybrid: ", hybridSet)
 
     fdec = os.path.join(MonDir, "fdec.tsv")
@@ -64,9 +67,16 @@ def main():
         mon_path = os.path.join(eDir, "mn.fa")
         fdec = os.path.join(eDir, "final_decomposition.tsv")
         G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, eDir, nodeThr=0, edgeThr=10)
-        hybridSet = hybrid.getHybridINFO(mon_path, fdec)
+        hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, fdec)
 
-    DetectHOR.detectHORs(mon_path, fdec, args.outdir, G, hybridSet)
+    HORs = DetectHOR.detectHORs(mon_path, fdec, args.outdir, G, hybridSet)
+    newNames = rename.RenameMonomers(HORs, hybridDict)
+    mon_path = rename.saveNewMn(mon_path, newNames, args.outdir)
+    fdec = utils.run_SD(mon_path, args.seq, args.outdir, 1)
+    dmg.BuildAndDrawMonomerGraph(mon_path, fdec, args.outdir, nodeThr=0, edgeThr=10)
+
+    HORs = rename.updateHORs(HORs, newNames)
+    DetectHOR.saveHOR(HORs, args.outdir)
 
 if __name__ == "__main__":
     main()

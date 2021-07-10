@@ -56,6 +56,9 @@ def detectHORs(mon_path, sd_path, outdir, G, hybridSet):
 
     cycles = genAllCycles(G)
     cycles = filterCycles(cycles, hybridSet)
+    return cycles
+
+def saveHOR(cycles, outdir):
     with open(os.path.join(outdir, "HORs.tsv"), "w") as fw:
         csv_writer = csv.writer(fw, delimiter='\t')
         horid = 1

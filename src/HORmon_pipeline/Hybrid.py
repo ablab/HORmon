@@ -32,6 +32,7 @@ def isHybrid(main_mn, mn1, mn2, main_rd):
 def getHybridINFO(mnpath, decpath):
     vcnt = TriplesMatrix.calc_mn_order_stat(decpath, maxk=2)[0]
     hybridSet = set()
+    hybridDict = {}
     monCA = utils.load_fasta(mnpath)
 
     rd = {mn.id: 100 for mn in monCA}
@@ -47,4 +48,5 @@ def getHybridINFO(mnpath, decpath):
                     if vcnt[monCA[j].id] > vcnt[monCA[i].id] and vcnt[monCA[g].id] > vcnt[monCA[i].id]:
                         if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id]):
                             hybridSet.add(monCA[i].id)
-    return hybridSet
+                            hybridDict[monCA[i].id] = (monCA[j].id, monCA[g].id)
+    return hybridSet, hybridDict
