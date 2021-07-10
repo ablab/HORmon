@@ -55,15 +55,15 @@ def main():
     mon, mon_path = MergeSplit.MergeSplitMonomers(valMonPath, args.seq, mergeSplDir, args.threads)
 
     MonDir = os.path.dirname(mon_path)
-    dmg.BuildAndDrawMonomerGraph(valMon, os.path.join(MonDir, "i0", "InitSD", "final_decomposition.tsv"), valMonDir, nodeThr=0,
-                                 edgeThr=10)
+    dmg.BuildAndDrawMonomerGraph(valMon, os.path.join(MonDir, "i0", "InitSD", "final_decomposition.tsv"),
+                                 valMonDir, nodeThr=0, edgeThr=10)
     G = dmg.BuildAndDrawMonomerGraph(mon_path, os.path.join(MonDir, "fdec.tsv"), MonDir, nodeThr=0, edgeThr=10)
 
     hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, os.path.join(MonDir, "fdec.tsv"))
     print("Hybrid: ", hybridSet)
 
     fdec = os.path.join(MonDir, "fdec.tsv")
-    eDir = elCycl.ElCycleSplit(mon_path, args.seq, fdec, args.outdir, G, hybridSet)
+    eDir = elCycl.ElCycleSplit(mon_path, args.seq, fdec, args.outdir, G, hybridSet, args.threads)
     if eDir is not None:
         mon_path = os.path.join(eDir, "mn.fa")
         fdec = os.path.join(eDir, "final_decomposition.tsv")
@@ -73,7 +73,7 @@ def main():
     HORs = DetectHOR.detectHORs(mon_path, fdec, args.outdir, G, hybridSet)
     newNames = rename.RenameMonomers(HORs, hybridDict)
     mon_path = rename.saveNewMn(mon_path, newNames, args.outdir)
-    fdec = utils.run_SD(mon_path, args.seq, args.outdir, 1)
+    fdec = utils.run_SD(mon_path, args.seq, args.outdir, args.threads)
     G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, args.outdir, nodeThr=0, edgeThr=10)
 
     HORs = rename.updateHORs(HORs, newNames)

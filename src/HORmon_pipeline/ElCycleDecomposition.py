@@ -80,7 +80,7 @@ def SplitMonomers(MnToSplit, mnpath,  sdtsv, path_seq, outd):
     utils.savemn(os.path.join(outd, "mn.fa"), mnlist)
 
 
-def ElCycleSplit(mn_path, seq_path, sd_tsv, outd, G, hybridSet):
+def ElCycleSplit(mn_path, seq_path, sd_tsv, outd, G, hybridSet, threads):
     cycles = DetectHOR.genAllCycles(G)
     mns_prm = [v for v in G.nodes() if v not in hybridSet]
     cl_all = []
@@ -107,5 +107,5 @@ def ElCycleSplit(mn_path, seq_path, sd_tsv, outd, G, hybridSet):
             MnSplit[v].append((cl_all[i - 1], cl_all[(i + 1)%len(cl_all)]))
 
     SplitMonomers(MnSplit, mn_path, sd_tsv, seq_path, outElC)
-    tsv_res = run_SD(os.path.join(outElC, "mn.fa"), seq_path, outElC, 1)
+    tsv_res = run_SD(os.path.join(outElC, "mn.fa"), seq_path, outElC, threads)
     return outElC
