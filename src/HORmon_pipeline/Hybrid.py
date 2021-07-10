@@ -22,9 +22,10 @@ def get_hybrid_len(main_mn, mn1, mn2):
     return (0, 0, 100)
 
 
-def isHybrid(main_mn, mn1, mn2):
+def isHybrid(main_mn, mn1, mn2, main_rd):
     pr, sf, idn = get_hybrid_len(main_mn, mn1, mn2)
-    if idn < 6:
+    if idn < 6 and idn + 2 < main_rd:
+        print("Hybrid", main_mn.id, main_rd, idn, mn1.id, mn2.id, pr, sf)
         return True
     return False
 
@@ -32,11 +33,18 @@ def getHybridINFO(mnpath, decpath):
     vcnt = TriplesMatrix.calc_mn_order_stat(decpath, maxk=2)[0]
     hybridSet = set()
     monCA = utils.load_fasta(mnpath)
+
+    rd = {mn.id: 100 for mn in monCA}
+    for i in range(len(monCA)):
+        for j in range(len(monCA)):
+            if i != j:
+                rd[monCA[i].id] = min(rd[monCA[i].id], utils.seq_identity(monCA[i].seq, monCA[j].seq))
+
     for i in range(len(monCA)):
         for j in range(len(monCA)):
             for g in range(len(monCA)):
                 if i != j and j != g and i != g:
                     if vcnt[monCA[j].id] > vcnt[monCA[i].id] and vcnt[monCA[g].id] > vcnt[monCA[i].id]:
-                        if isHybrid(monCA[i], monCA[j], monCA[g]):
+                        if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id]):
                             hybridSet.add(monCA[i].id)
     return hybridSet
