@@ -369,7 +369,11 @@ def get_clusters(blocks, args):
     for i in range(len(blocks)):
         clusters[cluserts_id[i]].append(blocks[i])
 
-    clusters.sort(key=lambda x: -len(x))
+    clusters.sort(key=lambda x: len(x))
+    clusters.reverse()
+    print("Clusters size: ")
+    for i in range(len(clusters)):
+        print(len(clusters[i]), end=" ")
     return clusters
 
 
@@ -839,6 +843,7 @@ def main():
 
     monomer_set_complete = False
     while (not monomer_set_complete):
+        origin_mn_list = monomers_list.copy()
         log.log("====== Start iteration " + str(iter_id) + "======")
         #create for current iteration
         iter_outdir = os.path.join(args.outdir, "iter_" + str(iter_id))
@@ -869,7 +874,6 @@ def main():
         non_monomeric_cnt, resolved_cnt = get_unresolved_blocks(res_tsv, monomers_list, args)
 
         deleted_cnt, monomers_list = delete_unused_monomers(monomers_list, monomer_resolved)
-        origin_mn_list = monomers_list.copy()
 
         update_all_monomers(monomers_list, args, monomer_resolved, iter_outdir, prev_dir)
 
