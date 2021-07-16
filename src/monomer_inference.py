@@ -866,6 +866,7 @@ def main():
         non_monomeric_cnt, resolved_cnt = get_unresolved_blocks(res_tsv, monomers_list, args)
 
         deleted_cnt, monomers_list = delete_unused_monomers(monomers_list, monomer_resolved)
+        origin_mn_list = monomers_list.copy()
 
         update_all_monomers(monomers_list, args, monomer_resolved, iter_outdir, prev_dir)
 
@@ -895,6 +896,8 @@ def main():
                     new_monomer = rc(new_monomer)
 
                 dist_to_monomers = get_dist_to_exists_monomers(monomers_list, new_monomer)
+                origin_dist = get_dist_to_exists_monomers(origin_mn_list, new_monomer)
+
                 log.log("Min Distance to exsisting monomers: " + str(dist_to_monomers))
 
                 new_monomer_record = SeqRecord(Seq(new_monomer), id="mn_" + str(iter_id + i), description="")
@@ -904,7 +907,7 @@ def main():
                 summary_writer.writerow(
                     [str(iter_id + i), str(resolved_cnt), str(len(unresolved_blocks)), str(non_monomeric_cnt),
                      str(len(max_cluster[i])), str(deleted_cnt), str(radius),
-                     str(dist_to_monomers), str(ch_cnt), str(crms)])
+                     str(dist_to_monomers), str(origin_dist), str(ch_cnt), str(crms)])
         else:
             summary_writer.writerow(
                 [str(iter_id), str(resolved_cnt), str(len(unresolved_blocks)), str(non_monomeric_cnt),
