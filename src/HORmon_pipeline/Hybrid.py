@@ -22,15 +22,36 @@ def get_hybrid_len(main_mn, mn1, mn2):
     return (0, 0, 100)
 
 
-def isHybrid(main_mn, mn1, mn2, main_rd):
+def isHybridContext(main_mn, mn1, mn2, kcnt2, edgeThr=100):
+    mnlst = {x[0] for x in kcnt2.keys()}
+    for mn in mnlst:
+        if (mn, mn1) in kcnt2 and kcnt2[(mn, mn1)] > edgeThr and \
+                (mn, main_mn) in kcnt2 and kcnt2[(mn, main_mn)] > edgeThr:
+           break
+    else:
+        return False
+
+
+    for mn in mnlst:
+        if (mn2, mn) in kcnt2 and kcnt2[(mn2, mn)] > edgeThr and \
+                (main_mn, mn) in kcnt2 and kcnt2[(main_mn, mn)] > edgeThr:
+           break
+    else:
+        return False
+
+    return True
+
+def isHybrid(main_mn, mn1, mn2, main_rd, kcnt2):
     pr, sf, idn = get_hybrid_len(main_mn, mn1, mn2)
-    if idn < 6 and idn + 2 < main_rd:
+    if idn < 6 and idn + 2 < main_rd and isHybridContext(main_mn.id, mn1.id, mn2.id, kcnt2):
         print("Hybrid", main_mn.id, main_rd, idn, mn1.id, mn2.id, pr, sf)
         return True
     return False
 
 def getHybridINFO(mnpath, decpath):
-    vcnt = TriplesMatrix.calc_mn_order_stat(decpath, maxk=2)[0]
+    kcnt = TriplesMatrix.calc_mn_order_stat(decpath, maxk=2)
+    vcnt = kcnt[0]
+    kcnt2 = kcnt[1]
     hybridSet = set()
     hybridDict = {}
     monCA = utils.load_fasta(mnpath)
@@ -46,7 +67,7 @@ def getHybridINFO(mnpath, decpath):
             for g in range(len(monCA)):
                 if i != j and j != g and i != g:
                     if vcnt[monCA[j].id] > vcnt[monCA[i].id] and vcnt[monCA[g].id] > vcnt[monCA[i].id]:
-                        if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id]):
+                        if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id], kcnt2):
                             hybridSet.add(monCA[i].id)
                             hybridDict[monCA[i].id] = (monCA[j].id, monCA[g].id)
     return hybridSet, hybridDict
