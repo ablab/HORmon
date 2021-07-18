@@ -12,7 +12,7 @@ import HORmon_pipeline.Hybrid as hybrid
 import HORmon_pipeline.ElCycleDecomposition as elCycl
 import HORmon_pipeline.RenameMonomers as rename
 import HORmon_pipeline.MonoRun as monorun
-
+import HORmon_pipeline.BuildSimpleGraph as smpGr
 
 def parse_args():
     parser = argparse.ArgumentParser(description="HORmon: updating monomers to make it consistent with CE postulate, and canonical HOR inferencing")
@@ -69,7 +69,8 @@ def main():
         G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, eDir)
         hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, fdec)
 
-    HORs = DetectHOR.detectHORs(mon_path, fdec, args.outdir, G, hybridSet)
+    SG = smpGr.BuildSimpleGraph(hybridSet, args.seq, fdec, mon_path)
+    HORs = DetectHOR.detectHORs(mon_path, fdec, args.outdir, SG, hybridSet)
     newNames = rename.RenameMonomers(HORs, hybridDict)
     mon_path = rename.saveNewMn(mon_path, newNames, args.outdir)
     fdec = utils.run_SD(mon_path, args.seq, args.outdir, args.threads)
