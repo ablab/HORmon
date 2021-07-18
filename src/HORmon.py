@@ -46,7 +46,7 @@ def main():
     if (not os.path.exists(os.path.join(args.outdir, "init"))):
         os.makedirs(os.path.join(args.outdir, "init"))
     dmg.BuildAndDrawMonomerGraph(args.mon, os.path.join(valMonDir, "final_decomposition.tsv"),
-                                 os.path.join(args.outdir, "init"), nodeThr=0,edgeThr=10)
+                                 os.path.join(args.outdir, "init"))
 
     mergeSplDir = os.path.join(args.outdir, "merge_split")
     if (not os.path.exists(mergeSplDir)):
@@ -55,9 +55,8 @@ def main():
     mon, mon_path = MergeSplit.MergeSplitMonomers(valMonPath, args.seq, mergeSplDir, args.threads)
 
     MonDir = os.path.dirname(mon_path)
-    dmg.BuildAndDrawMonomerGraph(valMon, os.path.join(MonDir, "i0", "InitSD", "final_decomposition.tsv"),
-                                 valMonDir, nodeThr=0, edgeThr=10)
-    G = dmg.BuildAndDrawMonomerGraph(mon_path, os.path.join(MonDir, "fdec.tsv"), MonDir, nodeThr=0, edgeThr=10)
+    dmg.BuildAndDrawMonomerGraph(valMon, os.path.join(MonDir, "i0", "InitSD", "final_decomposition.tsv"), valMonDir)
+    G = dmg.BuildAndDrawMonomerGraph(mon_path, os.path.join(MonDir, "fdec.tsv"), MonDir)
 
     hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, os.path.join(MonDir, "fdec.tsv"))
     print("Hybrid: ", hybridSet)
@@ -67,14 +66,14 @@ def main():
     if eDir is not None:
         mon_path = os.path.join(eDir, "mn.fa")
         fdec = os.path.join(eDir, "final_decomposition.tsv")
-        G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, eDir, nodeThr=0, edgeThr=10)
+        G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, eDir)
         hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, fdec)
 
     HORs = DetectHOR.detectHORs(mon_path, fdec, args.outdir, G, hybridSet)
     newNames = rename.RenameMonomers(HORs, hybridDict)
     mon_path = rename.saveNewMn(mon_path, newNames, args.outdir)
     fdec = utils.run_SD(mon_path, args.seq, args.outdir, args.threads)
-    G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, args.outdir, nodeThr=0, edgeThr=10)
+    G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, args.outdir)
 
     HORs = rename.updateHORs(HORs, newNames)
     DetectHOR.saveHOR(HORs, args.outdir)
@@ -82,7 +81,7 @@ def main():
     mnrundir = os.path.join(args.outdir, "MonoRun")
     if not os.path.exists(mnrundir):
         os.makedirs(mnrundir)
-    monorun.BuildAndShowMonorunGraph(fdec, mnrundir, 0, 10)
+    monorun.BuildAndShowMonorunGraph(fdec, mnrundir)
 
 
 if __name__ == "__main__":
