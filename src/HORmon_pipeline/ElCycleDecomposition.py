@@ -15,6 +15,8 @@ import HORmon_pipeline.MergeAndSplitMonomers as splitMn
 from HORmon_pipeline.utils import rc
 import HORmon_pipeline.utils as utils
 from HORmon_pipeline.utils import run_SD
+import HORmon_pipeline.BuildSimpleGraph as simpleGr
+import HORmon_pipeline.TriplesMatrix as tm
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
@@ -81,31 +83,46 @@ def SplitMonomers(MnToSplit, mnpath,  sdtsv, path_seq, outd):
 
 
 def ElCycleSplit(mn_path, seq_path, sd_tsv, outd, G, hybridSet, threads):
-    cycles = DetectHOR.genAllCycles(G)
-    mns_prm = [v for v in G.nodes() if v not in hybridSet]
-    cl_all = []
-    for cl in cycles:
-        usedV = set([v for v in cl if v not in hybridSet])
-        if usedV == set(mns_prm):
-            cl_all = cl
-            break
+    #cycles = DetectHOR.genAllCycles(G)
+    #mns_prm = [v for v in G.nodes() if v not in hybridSet]
+    #cl_all = []
+    #for cl in cycles:
+    #    usedV = set([v for v in cl if v not in hybridSet])
+    #    if usedV == set(mns_prm):
+    #        cl_all = cl
+    #        break
 
-    if len(cl_all) == 0:
-        return None
+    #if len(cl_all) == 0:
+    #    return None
 
-    cl_all = cl_all[:-1]
-    if len(cl_all) == len(set(cl_all)):
+    #cl_all = cl_all[:-1]
+    #if len(cl_all) == len(set(cl_all)):
+    #    return None
+
+    G = simpleGr.BuildSimpleGraph(hybridSet, seq_path, sd_tsv, mn_path)
+    mncnt = tm.calc_mn_order_stat(sd_tsv, maxk=2)[0]
+
+    if not nx.is_eulerian(G):
         return None
 
     outElC = os.path.join(outd, "ElCycleSplit")
     if not os.path.exists(outElC):
         os.makedirs(outElC)
 
-    MnSplit = {mn: [] for mn in cl_all if cl_all.count(mn) > 1}
-    for i, v in enumerate(cl_all):
-        if cl_all.count(v) > 1:
-            MnSplit[v].append((cl_all[i - 1], cl_all[(i + 1)%len(cl_all)]))
+    ndCnt = {mn: 0 for mn in mncnt}
+    elrCirc = list(nx.eulerian_circuit(G))
+    for x, y in elrCirc:
+        ndCnt[x] += 1
 
-    SplitMonomers(MnSplit, mn_path, sd_tsv, seq_path, outElC)
-    tsv_res = run_SD(os.path.join(outElC, "mn.fa"), seq_path, outElC, threads)
-    return outElC
+    if max(ndCnt.values()) > 1:
+        spltNode = {mn: [] for mn, cnt in ndCnt.items() if cnt > 1}
+        for i in range(len(elrCirc)):
+            x = elrCirc[i][0]
+            if ndCnt[x] > 1:
+                spltNode[x].append((elrCirc[i - 1][0], elrCirc[i][1]))
+
+        SplitMonomers(spltNode, mn_path, sd_tsv, seq_path, outElC)
+        tsv_res = run_SD(os.path.join(outElC, "mn.fa"), seq_path, outElC, threads)
+        return outElC
+
+    return None
