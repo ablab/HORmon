@@ -43,7 +43,8 @@ def isHybridContext(main_mn, mn1, mn2, kcnt2, edgeThr=100):
 
 def isHybrid(main_mn, mn1, mn2, main_rd, kcnt2):
     pr, sf, idn = get_hybrid_len(main_mn, mn1, mn2)
-    if idn < 6 and idn + 2 < main_rd and isHybridContext(main_mn.id, mn1.id, mn2.id, kcnt2):
+    
+    if idn < 6 and idn < main_rd and isHybridContext(main_mn.id, mn1.id, mn2.id, kcnt2):
         print("Hybrid", main_mn.id, main_rd, idn, mn1.id, mn2.id, pr, sf)
         return True
     return False
@@ -53,6 +54,7 @@ def getHybridINFO(mnpath, decpath):
     vcnt = kcnt[0]
     kcnt2 = kcnt[1]
     hybridSet = set()
+    hybridIdn = {}
     hybridDict = {}
     monCA = utils.load_fasta(mnpath)
 
@@ -66,8 +68,11 @@ def getHybridINFO(mnpath, decpath):
         for j in range(len(monCA)):
             for g in range(len(monCA)):
                 if i != j and j != g and i != g:
-                    if vcnt[monCA[j].id] > vcnt[monCA[i].id] and vcnt[monCA[g].id] > vcnt[monCA[i].id]:
-                        if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id], kcnt2):
-                            hybridSet.add(monCA[i].id)
-                            hybridDict[monCA[i].id] = (monCA[j].id, monCA[g].id)
+                    if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id], kcnt2):
+                        pr, sf, idn = get_hybrid_len(monCA[i], monCA[j], monCA[g])
+                        if monCA[i].id in hybridSet and idn > hybridIdn[monCA[i].id]:
+                            continue
+                        hybridSet.add(monCA[i].id)
+                        hybridIdn[monCA[i].id] = idn
+                        hybridDict[monCA[i].id] = (monCA[j].id, monCA[g].id)
     return hybridSet, hybridDict
