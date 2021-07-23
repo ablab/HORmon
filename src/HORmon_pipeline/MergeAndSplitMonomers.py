@@ -181,7 +181,7 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1):
     return False
 
 
-def MergeSplitMonomers(mns_path, seq_path, outdir, thr):
+def MergeSplitMonomers(mns_path, seq_path, outdir, thr, cenid):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -202,8 +202,8 @@ def MergeSplitMonomers(mns_path, seq_path, outdir, thr):
 
     with open(os.path.join(outdir, "MergeSplitStat.csv"), "w") as f:
         csv_writer = csv.writer(f, delimiter=',')
-        csv_writer.writerow(["#Init mon", "#Merge", "#Split", "#Final mon", "Final SqMean", "Final DBIndex"])
-        csv_writer.writerow([str(len(initmn)), str(cntMerge), str(cntSplit), str(len(finalm)),
+        csv_writer.writerow(["CenId", "#Init mon", "#Merge", "#Split", "#Final mon", "Final SqMean", "Final DBIndex"])
+        csv_writer.writerow([cenid, str(len(initmn)), str(cntMerge), str(cntSplit), str(len(finalm)),
                              str(utils.blocks_sqmean(seq_path, tsv_res , finalm)),
                              str(utils.DaviesBouldinIndex(seq_path, tsv_res , finalm))])
 

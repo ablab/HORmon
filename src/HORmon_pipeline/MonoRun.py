@@ -185,8 +185,12 @@ def BuildAndShowMonorunGraph(tsv_res, outdir, vLim=100, eLim = 100):
     monocen = utils.get_monocent(tsv_res)
 
     vcnt = {v : 0 for v, u in k2cnt.keys()}
+    eCnt = 0
     for vu, cnt in k2cnt.items():
         vcnt[vu[0]] += cnt
+        if cnt > eLim:
+            eCnt += 1
+
 
     #print(vcnt)
 
@@ -273,8 +277,9 @@ def BuildAndShowMonorunGraph(tsv_res, outdir, vLim=100, eLim = 100):
     except Exception:
         return
 
-    with open("Monorunscnt.csv", "a") as fw:
-        fw.write(str(len(mnrunG.nodes())) + "\n")
+    with open(os.path.join(outdir, "Monorunscnt.csv"), "w") as fw:
+        fw.write("Edges #:\t" + str(eCnt) + "\n")
+        fw.write("Monoruns #:\t" + str(len(mnrunG.nodes())) + "\n")
 
     srunG = SplitMnrunVert(mnrunG, epaths, k3cnt)
     sruno = ".".join(ofile.split(".")[:-1]) + "_splv.dot"
@@ -292,8 +297,8 @@ def BuildAndShowMonorunGraph(tsv_res, outdir, vLim=100, eLim = 100):
     print("AllCycles:")
     print(np.array(clsList))
     print("potential HOR:")
-    with open("HORs.tsv", "a") as fw:
-        for i in range(len(HORcnt)):
-            fw.write(str(clsList[i]) +  "\t" + str(mnPotentialHOR[i]) +  "\t" + str(HORcnt[i]) + "\n")
+   # with open("HORs.tsv", "a") as fw:
+   #     for i in range(len(HORcnt)):
+   #         fw.write(str(clsList[i]) +  "\t" + str(mnPotentialHOR[i]) +  "\t" + str(HORcnt[i]) + "\n")
 
     exCls = [clsList[i] for i in range(len(clsList)) if HORcnt[i] > 0]

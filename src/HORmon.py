@@ -18,6 +18,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="HORmon: updating monomers to make it consistent with CE postulate, and canonical HOR inferencing")
     parser.add_argument("--mon", dest="mon", help="path to initial monomers", required=True)
     parser.add_argument("--seq", dest="seq", help="path to centromere sequence", required=True)
+    parser.add_argument("--cen-id", dest="cenid", help="chromosome id", default="1")
     parser.add_argument("-t", dest="threads", help="number of threads(default=1)", default=1, type=int)
     parser.add_argument("-o", dest = "outdir", help="path to output directore", required=True)
 
@@ -52,11 +53,16 @@ def main():
     if (not os.path.exists(mergeSplDir)):
         os.makedirs(mergeSplDir)
 
-    mon, mon_path = MergeSplit.MergeSplitMonomers(valMonPath, args.seq, mergeSplDir, args.threads)
+    mon, mon_path = MergeSplit.MergeSplitMonomers(valMonPath, args.seq, mergeSplDir, args.threads, args.cenid)
 
     MonDir = os.path.dirname(mon_path)
     dmg.BuildAndDrawMonomerGraph(valMon, os.path.join(MonDir, "i0", "InitSD", "final_decomposition.tsv"), valMonDir)
     G = dmg.BuildAndDrawMonomerGraph(mon_path, os.path.join(MonDir, "fdec.tsv"), MonDir)
+
+    mnrundir = os.path.join(args.outdir, "MonoRunRaw")
+    if not os.path.exists(mnrundir):
+        os.makedirs(mnrundir)
+    monorun.BuildAndShowMonorunGraph(os.path.join(MonDir, "fdec.tsv"), mnrundir)
 
     hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, os.path.join(MonDir, "fdec.tsv"))
     print("Hybrid: ", hybridSet)
