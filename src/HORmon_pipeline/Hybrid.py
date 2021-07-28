@@ -67,9 +67,23 @@ def getHybridINFO(mnpath, decpath):
                 if i != j and j != g and i != g:
                     if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id], kcnt2):
                         pr, sf, idn = get_hybrid_len(monCA[i], monCA[j], monCA[g])
-                        if monCA[i].id in hybridSet and idn > hybridIdn[monCA[i].id]:
+                        if monCA[i].id in hybridSet:
                             continue
                         hybridSet.add(monCA[i].id)
+
+    for i in range(len(monCA)):
+        for j in range(len(monCA)):
+            for g in range(len(monCA)):
+                if not(monCA[i].id in hybridSet and (monCA[j].id not in hybridSet) and (monCA[g].id not in hybridSet)):
+                    continue
+
+                if i != j and j != g and i != g:
+                    if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id], kcnt2):
+                        pr, sf, idn = get_hybrid_len(monCA[i], monCA[j], monCA[g])
+                        if monCA[i].id in hybridIdn and idn > hybridIdn[monCA[i].id]:
+                            continue
+
                         hybridIdn[monCA[i].id] = idn
                         hybridDict[monCA[i].id] = (monCA[j].id, monCA[g].id)
+
     return hybridSet, hybridDict
