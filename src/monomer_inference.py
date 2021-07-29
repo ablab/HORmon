@@ -139,9 +139,11 @@ def set_blocks_seq(sequences, blocks):
         #print("Block read name:", blocks[i].read_name)
         #print(records[blocks[i].read_name])
         #print(records[blocks[i].read_name][2:6])
-        blocks[i].seq = records[blocks[i].read_name][blocks[i].lft:blocks[i].rgh + 1]
-        #print("Set seq: " + blocks[i].seq)
-
+        if blocks[i].lft < blocks[i].rgh:
+            blocks[i].seq = records[blocks[i].read_name][blocks[i].lft:blocks[i].rgh + 1]
+        else:
+            blocks[i].seq = records[blocks[i].read_name][blocks[i].rgh:blocks[i].lft + 1]
+            blocks[i].seq.seq = Seq(rc(str(blocks[i].seq.seq)))
 
 def get_distance(a, b):
     result = edlib.align(a, b, mode="NW", task="locations")
@@ -531,34 +533,34 @@ def init_monomers(monomers_path):
     return monomers_list
 
 
-need_reverse_monomers = -1
+#need_reverse_monomers = -1
 
 
-def reverse_monomer(args):
-    global need_reverse_monomers
-    if need_reverse_monomers != -1:
-        return need_reverse_monomers
-    else:
-        res_tsv = os.path.join(args.outdir, "iter_0", "final_decomposition.tsv")
-        cnt_need_rev = 0
-        cnt_dont_need_rev = 0
-        with open(res_tsv, "r") as f:
-            csv_reader = csv.reader(f, delimiter='\t')
-            for row in csv_reader:
-                if row[2] == "start":
-                    continue
-                identity = float(row[4])
-
-                if identity >= 100 - args.maxDiv:
-                    if row[1][-1] == "'":
-                        cnt_need_rev += 1
-                    else:
-                        cnt_dont_need_rev += 1
-        if cnt_need_rev > cnt_dont_need_rev:
-            need_reverse_monomers = 1
-        else:
-            need_reverse_monomers = 0
-        return need_reverse_monomers
+#def reverse_monomer(args):
+#    global need_reverse_monomers
+#    if need_reverse_monomers != -1:
+#        return need_reverse_monomers
+#    else:
+#        res_tsv = os.path.join(args.outdir, "iter_0", "final_decomposition.tsv")
+#        cnt_need_rev = 0
+#        cnt_dont_need_rev = 0
+#        with open(res_tsv, "r") as f:
+#            csv_reader = csv.reader(f, delimiter='\t')
+#            for row in csv_reader:
+#                if row[2] == "start":
+#                    continue
+#                identity = float(row[4])
+#
+#                if identity >= 100 - args.maxDiv:
+#                    if row[1][-1] == "'":
+#                        cnt_need_rev += 1
+#                    else:
+#                        cnt_dont_need_rev += 1
+#        if cnt_need_rev > cnt_dont_need_rev:
+#            need_reverse_monomers = 1
+#        else:
+#            need_reverse_monomers = 0
+#        return need_reverse_monomers
 
 
 def rc(seq):
@@ -615,8 +617,8 @@ def update_monomer(args, monomer_record, monomer_resolved_block, iter_outdir, pr
         cluster_seqs_path = os.path.join(iter_outdir, monomer_record.id.split('/')[0] + "_seqs.fa")
         save_seqs(monomer_resolved_block, cluster_seqs_path)
         new_monomer = get_consensus_seq(cluster_seqs_path, monomer_resolved_block, args.threads)
-        if reverse_monomer(args):
-            new_monomer = rc(new_monomer)
+        #if reverse_monomer(args):
+        #    new_monomer = rc(new_monomer)
         monomer_record.seq = Seq(new_monomer)
         updated_monomers.append(monomer_record.id)
 
@@ -752,15 +754,23 @@ def get_unresolved_blocks(res_tsv, monomers_list, args):
             identity = float(row[4])
             if identity >= 100 - args.resDiv:
                 resolved_cnt += 1
+                bgc = int(row[2])
+                edc = int(row[3])
                 if row[1][-1] == "'":
                     row[1] = row[1][:-1]
-                monomer_resolved[row[1]].append(MonomericBlock(row[0], int(row[2]), int(row[3])))
+                    bgc, edc = edc, bgc
+                monomer_resolved[row[1]].append(MonomericBlock(row[0], bgc, edc))
 
             if identity <= 100 - args.maxDiv:
                 non_monomeric_cnt += 1
 
             if (identity > 100 - args.maxDiv) and (identity < 100 - args.resDiv):
-                unresolved_blocks.append(MonomericBlock(row[0], int(row[2]), int(row[3])))
+                bgc = int(row[2])
+                edc = int(row[3])
+                if row[1][-1] == "'":
+                    row[1] = row[1][:-1]
+                    bgc, edc = edc, bgc
+                unresolved_blocks.append(MonomericBlock(row[0], bgc, edc))
 
     return unresolved_blocks, monomer_resolved, non_monomeric_cnt, resolved_cnt
 
@@ -854,7 +864,7 @@ def main():
                         f.write(u_mn + "\n")
                 extra_options = ["--new-monomers", upmn_path]
             # run string decomposer
-            sys_call(["python3", sd_script_path, args.sequences, local_monmers_path, "-t", str(args.threads), "--fast"])
+            sys_call(["python3", sd_script_path, args.sequences, local_monmers_path, "-t", str(args.threads), "--fast", "--ed_thr", "20"])
             log.log("String decomposer is complete. Results save in: " + iter_outdir)
 
         # parse output csv file
@@ -891,8 +901,8 @@ def main():
                 new_monomer = get_consensus_seq(cluster_seqs_path, max_cluster[i], args.threads)
                 radius = get_radius(new_monomer, max_cluster[i])
 
-                if reverse_monomer(args):
-                    new_monomer = rc(new_monomer)
+                #if reverse_monomer(args):
+                #    new_monomer = rc(new_monomer)
 
                 dist_to_monomers = get_dist_to_exists_monomers(monomers_list, new_monomer)
                 log.log("Min Distance to exsisting monomers: " + str(dist_to_monomers))
