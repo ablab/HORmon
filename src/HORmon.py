@@ -84,6 +84,11 @@ def main():
     fdec = utils.run_SD(mon_path, args.seq, args.outdir, args.threads)
     G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, args.outdir, nodeThr=args.vertThr, edgeThr=args.edgeThr)
 
+    SG = smpGr.BuildSimpleGraph(hybridSet, args.seq, fdec, mon_path)
+    if (not os.path.exists(os.path.join(args.outdir, "simplified_graph"))):
+        os.makedirs(os.path.join(args.outdir, "simplified_graph"))
+    dmg.DrawMonomerGraph(SG, os.path.join(args.outdir, "simplified_graph"))
+
     HORs = rename.updateHORs(HORs, newNames)
     DetectHOR.saveHOR(HORs, args.outdir)
 
