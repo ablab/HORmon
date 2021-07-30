@@ -66,10 +66,15 @@ def main():
         os.makedirs(mnrundir)
     monorun.BuildAndShowMonorunGraph(os.path.join(MonDir, "fdec.tsv"), mnrundir, vLim=args.vertThr,  eLim=args.edgeThr)
 
+    fdec = os.path.join(MonDir, "fdec.tsv")
+    SG = smpGr.BuildSimpleGraph(set(), args.seq, fdec, mon_path)
+    if (not os.path.exists(os.path.join(args.outdir, "simplified_graph"))):
+        os.makedirs(os.path.join(args.outdir, "simplified_graph"))
+    dmg.DrawMonomerGraph(SG, os.path.join(args.outdir, "simplified_graph"))
+
     hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, os.path.join(MonDir, "fdec.tsv"))
     print("Hybrid: ", hybridSet)
 
-    fdec = os.path.join(MonDir, "fdec.tsv")
     eDir = elCycl.ElCycleSplit(mon_path, args.seq, fdec, args.outdir, G, hybridSet, args.threads)
     if eDir is not None:
         mon_path = os.path.join(eDir, "mn.fa")
@@ -85,9 +90,9 @@ def main():
     G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, args.outdir, nodeThr=args.vertThr, edgeThr=args.edgeThr)
 
     SG = smpGr.BuildSimpleGraph(hybridSet, args.seq, fdec, mon_path)
-    if (not os.path.exists(os.path.join(args.outdir, "simplified_graph"))):
-        os.makedirs(os.path.join(args.outdir, "simplified_graph"))
-    dmg.DrawMonomerGraph(SG, os.path.join(args.outdir, "simplified_graph"))
+    if (not os.path.exists(os.path.join(args.outdir, "final_simplified_graph"))):
+        os.makedirs(os.path.join(args.outdir, "final_simplified_graph"))
+    dmg.DrawMonomerGraph(SG, os.path.join(args.outdir, "final_simplified_graph"))
 
     HORs = rename.updateHORs(HORs, newNames)
     DetectHOR.saveHOR(HORs, args.outdir)
