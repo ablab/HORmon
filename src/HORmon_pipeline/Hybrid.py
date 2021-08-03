@@ -41,7 +41,7 @@ def isHybridContext(main_mn, mn1, mn2, kcnt2, edgeThr=100):
 
 def isHybrid(main_mn, mn1, mn2, main_rd, kcnt2):
     pr, sf, idn = get_hybrid_len(main_mn, mn1, mn2)
-    if idn < 6 and idn < main_rd and isHybridContext(main_mn.id, mn1.id, mn2.id, kcnt2):
+    if idn < 6 and idn * 1.5 < main_rd and isHybridContext(main_mn.id, mn1.id, mn2.id, kcnt2):
         print("Hybrid", main_mn.id, main_rd, idn, mn1.id, mn2.id, pr, sf)
         return True
     return False

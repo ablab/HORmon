@@ -58,7 +58,11 @@ def get_blocks(trpl, path_seq, tsv_res):
     for i in range(1, len(df_sd) - 1):
         if df_sd.iloc[i,4] > 60:
             if df_sd.iloc[i, 1].rstrip("'") == trpl[1]:
-                if df_sd.iloc[i - 1, 1].rstrip("'") == trpl[0] and df_sd.iloc[i + 1, 1].rstrip("'") == trpl[2]:
+                curtr = trpl
+                if df_sd.iloc[i - 1, 1][-1] == "'":
+                    curtr = curtr[::-1]
+
+                if df_sd.iloc[i - 1, 1].rstrip("'") == curtr[0] and df_sd.iloc[i + 1, 1].rstrip("'") == curtr[2]:
                     blocks.append(seqs_dict[df_sd.iloc[i,0]][df_sd.iloc[i,2]:(df_sd.iloc[i,3] + 1)])
                     if df_sd.iloc[i, 1][-1] == "'":
                         blocks[-1] = rc(blocks[-1])
@@ -121,6 +125,7 @@ def ElCycleSplit(mn_path, seq_path, sd_tsv, outd, G, hybridSet, threads):
             if ndCnt[x] > 1:
                 spltNode[x].append((elrCirc[i - 1][0], elrCirc[i][1]))
 
+        print("Split Node: ", spltNode)
         SplitMonomers(spltNode, mn_path, sd_tsv, seq_path, outElC)
         tsv_res = run_SD(os.path.join(outElC, "mn.fa"), seq_path, outElC, threads)
         return outElC

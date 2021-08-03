@@ -25,6 +25,9 @@ def RenameMonomers(HORs, HybridDict):
                 newNames[HORs[i][j]] = getNameById(lstid)
                 lstid += 1
 
+    print("HORs", HORs)
+    print("New names:", newNames)
+    print("Hybrid dict:", HybridDict)
     for mn, vl in HybridDict.items():
         nm = getNameById(lstid)
         lstid += 1
