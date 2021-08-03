@@ -177,12 +177,92 @@ def getHORcnt(mnHOR, monocen):
     return cnt
 
 
-def BuildAndShorIterativeMonorunGraph(MonorunG, MonorunsToMonomers, Monocentromere):
+def detectNodes(mnrunG):
+    inE = {v: [] for v in mnrunG.nodes()}
+    outE = {v: [] for v in mnrunG.nodes()}
+
+    for e in mnrunG.edges():
+        inE[e[1]].append(e[0])
+        outE[e[0]].append(e[1])
+
+    usedV = set()
+    Nodes = []
+    for v in mnrunG.nodes():
+        if v in usedV:
+            continue
+
+        if len(inE[v]) != 1 or len(outE[v]) != 1:
+            usedV |= {v}
+            for u in outE[v]:
+                curE = [v]
+                w = u
+                while len(inE[w]) == 1 and len(outE[w]) == 1:
+                    usedV |= {w}
+                    curE.append(w)
+                    w = outE[w][0]
+
+                curE.append(w)
+                Nodes.append(curE)
+
+    for v in mnrunG.nodes():
+        if v in usedV:
+            continue
+
+        usedV |= {v}
+        for u in outE[v]:
+            curE = [v]
+            w = u
+            while w != v:
+                usedV |= {w}
+                curE.append(w)
+                w = outE[w]
+
+            curE.append(w)
+            Nodes.append(curE)
+    return Nodes
+
+
+def getWeight(NodesList, mnruns2mn, mncen):
+    mnlist = []
+    for nd in NodesList:
+        mnlist += mnruns2mn[nd]
+        mnlist = mnlist[:-1]
+
+    cntIner = 0
+    for i in range(len(mncen) - len(mnlist)):
+        if mncen[i:i+len(mnlist)] == mnlist:
+            cntIner += 1
+    return cntIner
+
+def BuildAndShorIterativeMonorunGraph(mnrunG, MonorunsToMonomers, Monocentromere, outdir, filenm="IterMnrun"):
     print("Iterative monorun graph:")
-    print("MonorunG:", MonorunG)
-    print("MonorunsToMonomers:", MonorunsToMonomers)
-    print("Monocen:", Monocentromere)
-    pass
+
+    iterMnNodes = detectNodes(mnrunG)
+    print("Iterative Monorun Nodes:", iterMnNodes)
+
+    mnIterG = nx.DiGraph()
+    for nds in iterMnNodes:
+        wgh = str(getWeight(nds, MonorunsToMonomers, Monocentromere))
+        mnIterG.add_node(','.join(nds), label=''.join(nds[1:]) + "[" + wgh + "]")
+
+    for nds1 in iterMnNodes:
+        for nds2 in iterMnNodes:
+            if nds1[-1] == nds2[0]:
+                wgh = getWeight(nds1 + nds2[1:], MonorunsToMonomers, Monocentromere)
+                if wgh > 0:
+                    mnIterG.add_edge(','.join(nds1), ','.join(nds2), label=str(wgh))
+
+    ofile = os.path.join(outdir, filenm + ".dot")
+    opng = os.path.join(outdir, filenm + ".png")
+    write_dot(mnIterG, ofile)
+    try:
+        check_call(['dot', '-Tpng', ofile, '-o', opng])
+    except Exception:
+        return
+
+    return iterMnNodes
+
+
 
 
 def BuildAndShowMonorunGraph(tsv_res, outdir, vLim=100, eLim = 100):
@@ -296,4 +376,9 @@ def BuildAndShowMonorunGraph(tsv_res, outdir, vLim=100, eLim = 100):
         return
 
     MonorunsToMonomers = {le.name: le.epath for le in lesall}
-    BuildAndShorIterativeMonorunGraph(mnrunG, MonorunsToMonomers, monocen)
+    for nd in srunG.nodes():
+        if nd[-1].isalpha():
+            MonorunsToMonomers[nd] = MonorunsToMonomers[nd[:-1]]
+
+    BuildAndShorIterativeMonorunGraph(mnrunG, MonorunsToMonomers, monocen, outdir)
+    BuildAndShorIterativeMonorunGraph(srunG, MonorunsToMonomers, monocen, outdir, "SplitIterMnrun")
