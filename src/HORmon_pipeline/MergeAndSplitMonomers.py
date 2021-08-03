@@ -82,7 +82,11 @@ def get_blocks(trpl, path_seq, tsv_res):
                 #print(df_sd.iloc[i, 1])
                 #print(df_sd.iloc[i - 1, 1], df_sd.iloc[i, 1], df_sd.iloc[i + 1, 1])
                 #print(trpl)
-                if df_sd.iloc[i - 1, 1].rstrip("'") == trpl[0] and df_sd.iloc[i + 1, 1].rstrip("'") == trpl[2]:
+                curtr = trpl
+                if df_sd.iloc[i - 1, 1][-1] == "'":
+                    curtr = curtr[::-1]
+
+                if df_sd.iloc[i - 1, 1].rstrip("'") == curtr[0] and df_sd.iloc[i + 1, 1].rstrip("'") == curtr[2]:
                     block2.append(seqs_dict[df_sd.iloc[i,0]][df_sd.iloc[i,2]:(df_sd.iloc[i,3] + 1)])
                     if df_sd.iloc[i, 1][-1] == "'":
                         block2[-1] = rc(block2[-1])
