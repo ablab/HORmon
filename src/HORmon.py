@@ -19,6 +19,8 @@ def parse_args():
     parser.add_argument("--mon", dest="mon", help="path to initial monomers", required=True)
     parser.add_argument("--seq", dest="seq", help="path to centromere sequence", required=True)
     parser.add_argument("--cen-id", dest="cenid", help="chromosome id", default="1")
+    parser.add_argument("--monomer-thr", dest="vertThr", help="Minimum weight for valuable monomers", type=int, default=100)
+    parser.add_argument("--edge-thr", dest="edgeThr", help="Minimum weight for valuable edges", type=int, default=100)
     parser.add_argument("-t", dest="threads", help="number of threads(default=1)", default=1, type=int)
     parser.add_argument("-o", dest = "outdir", help="path to output directore", required=True)
 
@@ -47,7 +49,7 @@ def main():
     if (not os.path.exists(os.path.join(args.outdir, "init"))):
         os.makedirs(os.path.join(args.outdir, "init"))
     dmg.BuildAndDrawMonomerGraph(args.mon, os.path.join(valMonDir, "final_decomposition.tsv"),
-                                 os.path.join(args.outdir, "init"))
+                                 os.path.join(args.outdir, "init"), nodeThr=args.vertThr, edgeThr=args.edgeThr)
 
     mergeSplDir = os.path.join(args.outdir, "merge_split")
     if (not os.path.exists(mergeSplDir)):
@@ -56,13 +58,13 @@ def main():
     mon, mon_path = MergeSplit.MergeSplitMonomers(valMonPath, args.seq, mergeSplDir, args.threads, args.cenid)
 
     MonDir = os.path.dirname(mon_path)
-    dmg.BuildAndDrawMonomerGraph(valMon, os.path.join(MonDir, "i0", "InitSD", "final_decomposition.tsv"), valMonDir)
-    G = dmg.BuildAndDrawMonomerGraph(mon_path, os.path.join(MonDir, "fdec.tsv"), MonDir)
+    dmg.BuildAndDrawMonomerGraph(valMon, os.path.join(MonDir, "i0", "InitSD", "final_decomposition.tsv"), valMonDir, nodeThr=args.vertThr,  edgeThr=args.edgeThr)
+    G = dmg.BuildAndDrawMonomerGraph(mon_path, os.path.join(MonDir, "fdec.tsv"), MonDir, nodeThr=args.vertThr, edgeThr=args.edgeThr)
 
     mnrundir = os.path.join(args.outdir, "MonoRunRaw")
     if not os.path.exists(mnrundir):
         os.makedirs(mnrundir)
-    monorun.BuildAndShowMonorunGraph(os.path.join(MonDir, "fdec.tsv"), mnrundir)
+    monorun.BuildAndShowMonorunGraph(os.path.join(MonDir, "fdec.tsv"), mnrundir, vLim=args.vertThr,  eLim=args.edgeThr)
 
     hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, os.path.join(MonDir, "fdec.tsv"))
     print("Hybrid: ", hybridSet)
@@ -72,15 +74,15 @@ def main():
     if eDir is not None:
         mon_path = os.path.join(eDir, "mn.fa")
         fdec = os.path.join(eDir, "final_decomposition.tsv")
-        G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, eDir)
+        G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, eDir, nodeThr=args.vertThr, edgeThr=args.edgeThr)
         hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, fdec)
 
-    SG = smpGr.BuildSimpleGraph(hybridSet, args.seq, fdec, mon_path)
+    SG = smpGr.BuildSimpleGraph(hybridSet, args.seq, fdec, mon_path, edgeThr=args.edgeThr)
     HORs = DetectHOR.detectHORs(mon_path, fdec, args.outdir, SG, hybridSet)
     newNames = rename.RenameMonomers(HORs, hybridDict)
     mon_path = rename.saveNewMn(mon_path, newNames, args.outdir)
     fdec = utils.run_SD(mon_path, args.seq, args.outdir, args.threads)
-    G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, args.outdir)
+    G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, args.outdir, nodeThr=args.vertThr, edgeThr=args.edgeThr)
 
     HORs = rename.updateHORs(HORs, newNames)
     DetectHOR.saveHOR(HORs, args.outdir)
@@ -88,7 +90,7 @@ def main():
     mnrundir = os.path.join(args.outdir, "MonoRun")
     if not os.path.exists(mnrundir):
         os.makedirs(mnrundir)
-    monorun.BuildAndShowMonorunGraph(fdec, mnrundir)
+    monorun.BuildAndShowMonorunGraph(fdec, mnrundir, vLim=args.vertThr, eLim=args.edgeThr)
 
 
 if __name__ == "__main__":

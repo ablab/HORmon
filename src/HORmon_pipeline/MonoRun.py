@@ -177,6 +177,14 @@ def getHORcnt(mnHOR, monocen):
     return cnt
 
 
+def BuildAndShorIterativeMonorunGraph(MonorunG, MonorunsToMonomers, Monocentromere):
+    print("Iterative monorun graph:")
+    print("MonorunG:", MonorunG)
+    print("MonorunsToMonomers:", MonorunsToMonomers)
+    print("Monocen:", Monocentromere)
+    pass
+
+
 def BuildAndShowMonorunGraph(tsv_res, outdir, vLim=100, eLim = 100):
     k_cnt = TriplesMatrix.calc_mn_order_stat(tsv_res, maxk=3)
     k2cnt = k_cnt[1]
@@ -261,9 +269,6 @@ def BuildAndShowMonorunGraph(tsv_res, outdir, vLim=100, eLim = 100):
         epaths[le.name] = le.epath
         for le2 in lesall:
             if le.epath[-1] == le2.epath[0]:
-                #print(len(le.epath), len(le2.epath))
-
-                #print(le2.epath)
                 if (le.epath[-2], le2.epath[0], le2.epath[1]) in k3cnt and \
                         k3cnt[(le.epath[-2], le2.epath[0], le2.epath[1])] >= eLim:
                     mnrunG.add_edge(le.name, le2.name,
@@ -290,15 +295,5 @@ def BuildAndShowMonorunGraph(tsv_res, outdir, vLim=100, eLim = 100):
     except Exception:
         return
 
-
-    clsList = genAllCycles(mnrunG)
-    mnPotentialHOR = [monomrunHOR2monomersHOR(cc, epaths) for cc in clsList]
-    HORcnt = [getHORcnt(mnHOR + mnHOR, monocen) for mnHOR in mnPotentialHOR]
-    print("AllCycles:")
-    print(np.array(clsList))
-    print("potential HOR:")
-   # with open("HORs.tsv", "a") as fw:
-   #     for i in range(len(HORcnt)):
-   #         fw.write(str(clsList[i]) +  "\t" + str(mnPotentialHOR[i]) +  "\t" + str(HORcnt[i]) + "\n")
-
-    exCls = [clsList[i] for i in range(len(clsList)) if HORcnt[i] > 0]
+    MonorunsToMonomers = {le.name: le.epath for le in lesall}
+    BuildAndShorIterativeMonorunGraph(mnrunG, MonorunsToMonomers, monocen)
