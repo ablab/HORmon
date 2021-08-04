@@ -1,5 +1,4 @@
 from Bio.Seq import Seq
-from Bio.Alphabet import generic_dna
 from Bio import SeqIO
 from Bio import SearchIO
 from Bio.SeqRecord import SeqRecord
@@ -64,8 +63,8 @@ def load_horascycle(filename):
         for ln in fin.readlines():
             if len(ln.split("\t")) < 2:
                 continue
-            hor_name, hor_seq = ln.strip().split("\t")[:-1]
-            hor_lst = shift(hor_seq.split(","))
+            hor_name, hor_seq = ln.strip().split("\t")[:2]
+            hor_lst = shift(hor_seq.split(",")[:-1])
             hor = build_cycle(hor_lst)
             hors[hor_name] = [hor, len(hor_lst), hor_cnt]
             mono_mp, mono_cnt = add_monomers(mono_mp, mono_cnt, hor_lst)
@@ -79,7 +78,7 @@ def decompose(monodec, hors, rev=False):
     hordec = []
     if len(monodec) == 0:
         return hordec
-    
+
     fp = 0 if not rev else len(monodec) - 1
 
     inhor, cur_hor = 1, [monodec[fp]]
@@ -186,12 +185,12 @@ def main():
         for i in range(len(hordec)):
            if float(hordec[i][4]) > MONOIDNT:
                fout.write("\t".join(hordec[i][:-1]) + "\n")
+    print("HOR decomposition saved to", outfilename)
 
     hordec_c = collapse_hordec(hordec, mono_mp, hors)
     with open(outfilename[:-len(".tsv")]+"_collapsed.tsv", "w") as fout:
         for i in range(len(hordec_c)):
            fout.write("\t".join(hordec_c[i]).replace("{","").replace("}", "") + "\n")
-    print("HOR decomposition saved to", outfilename)
     print("Collapsed HOR decomposition saved to", outfilename[:-len(".tsv")]+"_collapsed.tsv")
 
 if __name__ == "__main__":
