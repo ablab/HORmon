@@ -232,6 +232,8 @@ def getWeight(NodesList, mnruns2mn, mncen):
     for i in range(len(mncen) - len(mnlist)):
         if mncen[i:i+len(mnlist)] == mnlist:
             cntIner += 1
+        if [nm[:-1] for nm in mncen[i+len(mnlist)-1:i-1:-1]] == mnlist:
+            cntIner += 1
     return cntIner
 
 def BuildAndShorIterativeMonorunGraph(mnrunG, MonorunsToMonomers, Monocentromere, outdir, filenm="IterMnrun"):
@@ -250,7 +252,7 @@ def BuildAndShorIterativeMonorunGraph(mnrunG, MonorunsToMonomers, Monocentromere
             if nds1[-1] == nds2[0]:
                 wgh = getWeight(nds1 + nds2[1:], MonorunsToMonomers, Monocentromere)
                 if wgh > 0:
-                    mnIterG.add_edge(','.join(nds1), ','.join(nds2), label=str(wgh))
+                    mnIterG.add_edge(','.join(nds1), ','.join(nds2), label=str(wgh), penwidth=str(math.log10(wgh)))
 
     ofile = os.path.join(outdir, filenm + ".dot")
     opng = os.path.join(outdir, filenm + ".png")
