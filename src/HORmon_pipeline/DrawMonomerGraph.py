@@ -17,14 +17,6 @@ def DrawMonomerGraph(G, outdir):
         return
 
 
-def getEdgeThr(k2cnt):
-    vcnt = {v : 0 for v, u in k2cnt.keys()}
-    for vu, cnt in k2cnt.items():
-        vcnt[vu[0]] += cnt
-    minW = min(100, min([cnt for v, cnt in vcnt.items()])*0.9)
-    return minW
-
-
 def buildk_graph(kcnt1, kcnt2, k=1, nodeThr=100, edgeThr=100):
     mn_set = {tuple(list(x)[:-1]) for x, y in kcnt2.items() if y > nodeThr} | \
              {tuple(list(x)[1:]) for x, y in kcnt2.items() if y > nodeThr}
@@ -74,17 +66,14 @@ def buildk_graph(kcnt1, kcnt2, k=1, nodeThr=100, edgeThr=100):
     return G
 
 
-def BuildMonomerGraph(path_to_mn, sdout, nodeThr=100, edgeThr="auto"):
+def BuildMonomerGraph(path_to_mn, sdout, nodeThr=100, edgeThr=100):
     k_cnt = tm.calc_mn_order_stat(sdout, maxk=2)
-    if edgeThr=="auto":
-        edgeThr = getEdgeThr(k_cnt[1])
-    else:
-        edgeThr = int(edgeThr)
+    edgeThr = int(edgeThr)
 
     G = buildk_graph(k_cnt[0], k_cnt[1], 1, nodeThr, edgeThr)
     return G
 
-def BuildAndDrawMonomerGraph(path_to_mn, sdout, outdir, nodeThr=100, edgeThr="auto"):
+def BuildAndDrawMonomerGraph(path_to_mn, sdout, outdir, nodeThr=100, edgeThr=100):
     G = BuildMonomerGraph(path_to_mn, sdout, nodeThr=nodeThr, edgeThr=edgeThr)
     DrawMonomerGraph(G, outdir)
     return G

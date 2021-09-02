@@ -155,6 +155,7 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1):
     bstm, bp = get_best(posscore)
     if bp > 0.4:
         cntMerge += 1
+        print("Merge Midle", "position score=", bp, " similaroty score=", sim[(mons[bstm[0]].id, mons[bstm[1]].id)])
         resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path)
         utils.savemn(os.path.join(odir, "mn.fa"), resmn)
         return True
@@ -163,6 +164,7 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1):
     bstm, bp = get_best(posscore)
     if bp > 0.4:
         cntMerge += 1
+        print("Merge Prefix", "position score=", bp, " similaroty score=", sim[(mons[bstm[0]].id, mons[bstm[1]].id)])
         resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path)
         utils.savemn(os.path.join(odir, "mn.fa"), resmn)
         return True
@@ -171,6 +173,7 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1):
     bstm, bp = get_best(posscore)
     if bp > 0.4:
         cntMerge += 1
+        print("Merge Suffix", "position score=", bp, " similaroty score=", sim[(mons[bstm[0]].id, mons[bstm[1]].id)])
         resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path)
         utils.savemn(os.path.join(odir, "mn.fa"), resmn)
         return True

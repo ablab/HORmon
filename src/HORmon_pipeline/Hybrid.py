@@ -39,14 +39,14 @@ def isHybridContext(main_mn, mn1, mn2, kcnt2, edgeThr=100):
         return False
     return True
 
-def isHybrid(main_mn, mn1, mn2, main_rd, kcnt2):
+def isHybrid(main_mn, mn1, mn2, main_rd, kcnt2, edgeThr):
     pr, sf, idn = get_hybrid_len(main_mn, mn1, mn2)
-    if idn < 6 and idn * 1.5 < main_rd and isHybridContext(main_mn.id, mn1.id, mn2.id, kcnt2):
+    if idn < 6 and idn * 1.5 < main_rd and isHybridContext(main_mn.id, mn1.id, mn2.id, kcnt2, edgeThr):
         print("Hybrid", main_mn.id, main_rd, idn, mn1.id, mn2.id, pr, sf)
         return True
     return False
 
-def getHybridINFO(mnpath, decpath):
+def getHybridINFO(mnpath, decpath, edgeThr):
     kcnt = TriplesMatrix.calc_mn_order_stat(decpath, maxk=2)
     vcnt = kcnt[0]
     kcnt2 = kcnt[1]
@@ -65,7 +65,7 @@ def getHybridINFO(mnpath, decpath):
         for j in range(len(monCA)):
             for g in range(len(monCA)):
                 if i != j and j != g and i != g:
-                    if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id], kcnt2):
+                    if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id], kcnt2, edgeThr):
                         pr, sf, idn = get_hybrid_len(monCA[i], monCA[j], monCA[g])
                         if monCA[i].id in hybridSet:
                             continue
@@ -78,7 +78,7 @@ def getHybridINFO(mnpath, decpath):
                     continue
 
                 if i != j and j != g and i != g:
-                    if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id], kcnt2):
+                    if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id], kcnt2, edgeThr):
                         pr, sf, idn = get_hybrid_len(monCA[i], monCA[j], monCA[g])
                         if monCA[i].id in hybridIdn and idn > hybridIdn[monCA[i].id]:
                             continue
