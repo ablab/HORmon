@@ -33,6 +33,9 @@ def parse_args():
                         help="minCountFraction. "
                              "Remove edges in monomer-graph with multiplicite below min(MinEdgeMultiplicite, "
                              "minCountFraction * (min occurrence of valuable monomer))", type=float, default=0.9)
+    parser.add_argument("--min-traversals", dest="minTraversals",
+                        help="minimum HOR(or monocycle) occurance",
+                        type=int, default=100)
     parser.add_argument("-t", dest="threads", help="number of threads(default=1)", default=1, type=int)
     parser.add_argument("-o", dest = "outdir", help="path to output directore", required=True)
 
@@ -92,7 +95,9 @@ def main():
     mnrundir = os.path.join(args.outdir, "MonoRunRaw")
     if not os.path.exists(mnrundir):
         os.makedirs(mnrundir)
-    monorun.BuildAndShowMonorunGraph(os.path.join(MonDir, "fdec.tsv"), mnrundir, vLim=args.vertThr,  eLim=args.edgeThr)
+
+    fdec=os.path.join(MonDir, "fdec.tsv")
+    monorun.BuildAndShowMonorunGraph(fdec, mnrundir, vLim=args.vertThr,  eLim=getMonomerGraphEdgeThr(fdec, args))
 
     fdec = os.path.join(MonDir, "fdec.tsv")
     hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, fdec, getMonomerGraphEdgeThr(fdec, args))
@@ -107,7 +112,7 @@ def main():
         hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, fdec, getMonomerGraphEdgeThr(fdec, args))
 
     SG = smpGr.BuildSimpleGraph(hybridSet, args.seq, fdec, mon_path, edgeThr=getMonomerGraphEdgeThr(fdec, args))
-    HORs = DetectHOR.detectHORs(mon_path, fdec, args.outdir, SG, hybridSet)
+    HORs = DetectHOR.detectHORs(mon_path, fdec, args.outdir, SG, hybridSet, args.minTraversals)
     newNames = rename.RenameMonomers(HORs, hybridDict)
     mon_path = rename.saveNewMn(mon_path, newNames, args.outdir)
     fdec = utils.run_SD(mon_path, args.seq, args.outdir, args.threads)
@@ -121,7 +126,7 @@ def main():
     mnrundir = os.path.join(args.outdir, "MonoRun")
     if not os.path.exists(mnrundir):
         os.makedirs(mnrundir)
-    monorun.BuildAndShowMonorunGraph(fdec, mnrundir, vLim=args.vertThr, eLim=args.edgeThr)
+    monorun.BuildAndShowMonorunGraph(fdec, mnrundir, vLim=args.vertThr, eLim=getMonomerGraphEdgeThr(fdec, args))
 
 
 if __name__ == "__main__":

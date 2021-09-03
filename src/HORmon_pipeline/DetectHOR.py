@@ -33,12 +33,29 @@ def genAllCycles(G):
     return cycleList
 
 
-def filterCycles(cycles, hybridSet):
+def getCycleCnt(cl, mncen):
+    clcnt = 0
+    for i in range(len(mncen) - len(cl)):
+        if mncen[i:i+len(cl)] == cl:
+            clcnt += 1
+
+    ccl = [x + "'" for x in cl[len(cl)::-1]]
+
+    for i in range(len(mncen) - len(cl)):
+        if mncen[i:i+len(cl)] == ccl:
+            clcnt += 1
+
+    return clcnt
+
+def filterCycles(cycles, hybridSet, mncen, minTrav):
     usedV = set()
     cycles.sort(key=lambda x: -len(x))
     res_cyc = []
     for cl in cycles:
         if len([v for v in cl if v in hybridSet]) > 0:
+            continue
+
+        if getCycleCnt(cl, mncen) < minTrav:
             continue
 
         for v in cl:
@@ -49,13 +66,13 @@ def filterCycles(cycles, hybridSet):
     return res_cyc
 
 
-def detectHORs(mon_path, sd_path, outdir, G, hybridSet):
+def detectHORs(mon_path, sd_path, outdir, G, hybridSet, minTrav):
     mncen = utils.get_monocent(sd_path)
     with open(os.path.join(outdir, "Monocen"), "w") as fw:
         fw.write(str(mncen))
 
     cycles = genAllCycles(G)
-    cycles = filterCycles(cycles, hybridSet)
+    cycles = filterCycles(cycles, hybridSet, mncen, minTrav)
     return cycles
 
 def saveHOR(cycles, outdir):
