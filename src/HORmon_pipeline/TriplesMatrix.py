@@ -195,8 +195,6 @@ def SplitAllMn(trp_cnt, db_cnt, thr=1):
                 bst_lst.append((i, j))
         bst_lst.sort(key=lambda x: -Trp[x[0]][x[1]])
 
-        if mn == "mn_3":
-            print("3: ", mnlist[bst[0]], mnlist[bst[1]], mnlist[scb[0]], mnlist[scb[1]])
         for i in range(1, len(bst_lst)):
             isIndependent = True
             scb = bst_lst[i]

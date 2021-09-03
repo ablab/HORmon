@@ -105,7 +105,7 @@ def SplitMn(trpl, nnm, odir, mons, path_seq):
     block1, block2 = get_blocks(trpl, path_seq, tsv_res)
     save_seqs(block1, os.path.join(odir, "blseq.fa"))
     consensus = get_consensus_seq(os.path.join(odir, "blseq.fa"), 16)
-    name = trpl[1]
+    name = trpl[1] + ".0"
     new_record = SeqRecord(Seq(consensus), id=name, name=name, description="")
     resmns.append(new_record)
 
