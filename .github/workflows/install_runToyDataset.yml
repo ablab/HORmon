@@ -16,12 +16,16 @@ jobs:
               uses: actions/setup-python@v2
               with:
                   python-version: ${{ matrix.python-version }}
+            - name: Check python version
+              run: |
+                   which python
+                   python --version
             - name: Add conda to system path
               run: |
                    # $CONDA is an environment variable pointing to the root of the miniconda directory
-                   which python
-                   python --version
                    echo $CONDA/bin >> $GITHUB_PATH
+            - name: Check python version
+              run: |
                    which python
                    python --version
             - name: Install dependencies
