@@ -19,10 +19,13 @@ jobs:
             - name: Add conda to system path
               run: |
                    # $CONDA is an environment variable pointing to the root of the miniconda directory
+                   which python
+                   python --version
                    echo $CONDA/bin >> $GITHUB_PATH
+                   which python
+                   python --version
             - name: Install dependencies
               run: |
-                   which python
                    conda config --add channels defaults
                    conda config --add channels bioconda
                    conda config --add channels conda-forge
