@@ -1,8 +1,1 @@
-biopython
-clustalo
-joblib
-python-edlib
-setuptools
-networkx
-pygraphviz
 stringdecomposer
