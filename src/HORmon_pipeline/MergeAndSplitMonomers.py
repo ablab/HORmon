@@ -14,6 +14,8 @@ from HORmon_pipeline.utils import rc
 from HORmon_pipeline.utils import unique
 from HORmon_pipeline.utils import load_fasta
 from HORmon_pipeline.utils import run_SD
+from HORmon_pipeline.utils import save_seqs
+from HORmon_pipeline.utils import get_consensus_seq
 import HORmon_pipeline.TriplesMatrix as TriplesMatrix
 
 
@@ -29,31 +31,6 @@ def getMnSim(mon):
 cntMerge = 0
 cntSplit = 0
 tsv_res = ""
-
-def save_seqs(blocks, cluster_seqs_path):
-    with open(cluster_seqs_path, "w") as fa:
-        for i in range(len(blocks)):
-            name = "block" + str(i)
-            new_record = SeqRecord(Seq(blocks[i]), id=name, name=name, description="")
-            SeqIO.write(new_record, fa, "fasta")
-
-def get_consensus_seq(cluster_seqs_path, arg_threads):
-    from Bio.Align.Applications import ClustalwCommandline
-    from Bio.Align.Applications import ClustalOmegaCommandline
-    from Bio import AlignIO
-    from Bio.Align import AlignInfo
-    from Bio.Align import MultipleSeqAlignment
-
-    aln_file = '.'.join(cluster_seqs_path.split('.')[:-1]) + "_aln.fasta"
-    cmd = ClustalOmegaCommandline(infile=cluster_seqs_path, outfile=aln_file, force=True, threads=arg_threads)
-    stdout, stderr = cmd()
-    align = AlignIO.read(aln_file, "fasta")
-
-    summary_align = AlignInfo.SummaryInfo(align)
-    consensus = summary_align.gap_consensus(threshold=0, ambiguous='N')
-    consensus = str(consensus).replace('-', '')
-    return consensus
-
 
 def MergeMonomers(mn1, mn2, odir, mons, path_seq):
     print("====MERGE===" + mn1.id + "+" + mn2.id)

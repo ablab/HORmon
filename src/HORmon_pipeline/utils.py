@@ -1,7 +1,9 @@
 import os
 import sys
 import edlib
+from Bio.Seq import Seq
 from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
 import pandas as pd
 import numpy as np
 
@@ -104,8 +106,8 @@ def run_SD(pathToMon, seqPath, outName, thr):
     seqPath =  os.path.abspath(seqPath)
     origin_dir = os.path.abspath(os.getcwd())
     os.chdir(outName)
-    #if not os.path.exists("final_decomposition.tsv"):
-    sys_call([sd_run, seqPath, pathToMon, "-t", str(thr)])
+    if not os.path.exists("final_decomposition.tsv"):
+        sys_call([sd_run, seqPath, pathToMon, "-t", str(thr)])
     os.chdir(origin_dir)
     return os.path.join(outName, "final_decomposition.tsv")
 
@@ -160,3 +162,50 @@ def savemn(out, mns):
     with open(out, "w") as fa:
         for record in mns:
             SeqIO.write(record, fa, "fasta")
+
+
+def save_seqs(blocks, cluster_seqs_path):
+    with open(cluster_seqs_path, "w") as fa:
+        for i in range(len(blocks)):
+            name = "block" + str(i)
+            new_record = SeqRecord(Seq(blocks[i]), id=name, name=name, description="")
+            SeqIO.write(new_record, fa, "fasta")
+
+def get_consensus_seq(cluster_seqs_path, arg_threads):
+    from Bio.Align.Applications import ClustalwCommandline
+    from Bio.Align.Applications import ClustalOmegaCommandline
+    from Bio import AlignIO
+    from Bio.Align import AlignInfo
+    from Bio.Align import MultipleSeqAlignment
+
+    aln_file = '.'.join(cluster_seqs_path.split('.')[:-1]) + "_aln.fasta"
+    cmd = ClustalOmegaCommandline(infile=cluster_seqs_path, outfile=aln_file, force=True, threads=arg_threads)
+    stdout, stderr = cmd()
+    align = AlignIO.read(aln_file, "fasta")
+
+    summary_align = AlignInfo.SummaryInfo(align)
+    consensus = summary_align.gap_consensus(threshold=0, ambiguous='N')
+    consensus = str(consensus).replace('-', '')
+    return consensus
+
+
+def updateMonomersByMonomerBlocks(mns, outdir, tsv_res, path_seq, threads):
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    blocks = get_blocks(path_seq, tsv_res)
+    cid = 0
+    for mn in mns:
+        mn_blocks = []
+        for block in blocks:
+            dists = [(get_dist(block, str(mnx.seq)), mnx.id) for mnx in mns]
+            if min(dists)[1] == mn.id:
+                mn_blocks.append(block)
+
+        blf = os.path.join(outdir, "blocks_" + str(cid) + ".fa")
+        save_seqs(mn_blocks, blf)
+        mn.seq = Seq(get_consensus_seq(blf, threads))
+        cid += 1
+
+    savemn(os.path.join(outdir, "updated_mn.fa"), mns)
+    sd_tsv = run_SD(os.path.join(outdir, "updated_mn.fa"), path_seq, outdir, threads)
+    return mns, os.path.join(outdir, "updated_mn.fa"), sd_tsv

@@ -106,6 +106,10 @@ def main():
     if eDir is not None:
         mon_path = os.path.join(eDir, "mn.fa")
         fdec = os.path.join(eDir, "final_decomposition.tsv")
+
+        mns = utils.load_fasta(mon_path)
+        mns, mon_path, fdec = utils.updateMonomersByMonomerBlocks(mns, os.path.join(args.outdir, "finalMnUpdate"), fdec, args.seq, int(args.threads))
+
         G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, eDir,
                                          nodeThr=args.vertThr,
                                          edgeThr=getMonomerGraphEdgeThr(fdec, args))
