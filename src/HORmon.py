@@ -36,6 +36,7 @@ def parse_args():
     parser.add_argument("--min-traversals", dest="minTraversals",
                         help="minimum HOR(or monocycle) occurance",
                         type=int, default=100)
+    parser.add_argument("--original_mn", dest = "IAmn", help="path to original monomer only for comparing", default="")
     parser.add_argument("-t", dest="threads", help="number of threads(default=1)", default=1, type=int)
     parser.add_argument("-o", dest = "outdir", help="path to output directore", required=True)
 
@@ -64,6 +65,9 @@ def main():
     args.mon = os.path.realpath(args.mon)
     args.seq = os.path.realpath(args.seq)
 
+    if args.IAmn != "":
+        args.IAmn = os.path.realpath(args.IAmn)
+
     valMon, valMonPath = getValuableMonomers(args)
     valMonDir = os.path.dirname(valMonPath)
 
@@ -90,7 +94,10 @@ def main():
     sdout =  os.path.join(MonDir, "fdec.tsv")
     G = dmg.BuildAndDrawMonomerGraph(mon_path, sdout, MonDir,
                                      nodeThr=args.vertThr,
-                                     edgeThr=getMonomerGraphEdgeThr(sdout, args))
+                                     edgeThr=getMonomerGraphEdgeThr(sdout, args), IAmn=args.IAmn)
+
+    SG = smpGr.BuildSimpleGraph({}, args.seq, sdout, mon_path, edgeThr=getMonomerGraphEdgeThr(sdout, args), IAmn=args.IAmn)
+    dmg.DrawMonomerGraph(SG, MonDir, "simpl_graph")
 
     mnrundir = os.path.join(args.outdir, "MonoRunRaw")
     if not os.path.exists(mnrundir):
@@ -112,8 +119,10 @@ def main():
 
         G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, eDir,
                                          nodeThr=args.vertThr,
-                                         edgeThr=getMonomerGraphEdgeThr(fdec, args))
+                                         edgeThr=getMonomerGraphEdgeThr(fdec, args), IAmn=args.IAmn)
         hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, fdec, getMonomerGraphEdgeThr(fdec, args))
+        SG = smpGr.BuildSimpleGraph({}, args.seq, fdec, mon_path, edgeThr=getMonomerGraphEdgeThr(fdec, args), IAmn=args.IAmn)
+        dmg.DrawMonomerGraph(SG, os.path.join(args.outdir, "finalMnUpdate"), "simpl_graph")
 
     SG = smpGr.BuildSimpleGraph(hybridSet, args.seq, fdec, mon_path, edgeThr=getMonomerGraphEdgeThr(fdec, args))
     HORs = DetectHOR.detectHORs(mon_path, fdec, args.outdir, SG, hybridSet, args.minTraversals)

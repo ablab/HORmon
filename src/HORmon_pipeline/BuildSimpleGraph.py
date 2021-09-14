@@ -7,6 +7,7 @@ from subprocess import check_call
 import math
 import os
 import pandas as pd
+import HORmon_pipeline.utils as utils
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
@@ -38,14 +39,16 @@ def GetMaxMatching(kcnt):
     return matching
 
 
-def addNode(G, mn, mncnt, IsHybrid):
+def addNode(G, mn, mncnt, IsHybrid, map2IA=None):
     lg = 0.01
     if mncnt > 0:
         lg = math.log(mncnt)
     clr = ["red", "#cd5700", "orange", "#ffb300", "yellow", "#ceff1d", "#a7fc00", "#00ff00", "#e0ffff", "#f5fffa"]
     curc = "pink" if IsHybrid else clr[int(lg)]
-    G.add_node(mn, style=f'filled', fillcolor=f'{curc}', label=f'{mn}[{str(int(mncnt))}]')
-
+    if map2IA is None or len(map2IA) == 0:
+        G.add_node(mn, style=f'filled', fillcolor=f'{curc}', label=f'{mn}[{str(int(mncnt))}]')
+    else:
+        G.add_node(mn, style=f'filled', fillcolor=f'{curc}', label=f'{mn}\n({map2IA[mn][1]})[{str(int(mncnt))}]')
 
 def addEdges(G, mn1, mn2, cnt, thr):
     scr = cnt
@@ -59,14 +62,20 @@ def addEdges(G, mn1, mn2, cnt, thr):
         G.add_edge(mn1, mn2, label=f'{scr}', penwidth=f'{wgs[wg]}')
 
 
-def BuildSimpleGraph(HybridSet, path_seq, sdtsv, mnpath, nodeThr = 100, edgeThr=100):
+def BuildSimpleGraph(HybridSet, path_seq, sdtsv, mnpath, nodeThr = 100, edgeThr=100, IAmn=""):
+    map2IA = {}
+    if IAmn != "":
+        mons = utils.load_fasta(mnpath)
+        IAmns = utils.load_fasta(IAmn)
+        map2IA = utils.map_mn(mons, IAmns)
+
     kcnt = tm.calc_mn_order_stat(sdtsv, maxk=2)[1]
     mncnt = tm.calc_mn_order_stat(sdtsv, maxk=2)[0]
 
     matching = GetMaxMatching(kcnt)
     G = nx.DiGraph()
     for mn in mncnt.keys():
-        addNode(G, mn, mncnt[mn], False)
+        addNode(G, mn, mncnt[mn], False, map2IA)
 
     cycleid = {mn: i for i, mn in enumerate(list(mncnt.keys()))}
 

@@ -9,15 +9,15 @@ import os
 import HORmon_pipeline.utils as utils
 import HORmon_pipeline.TriplesMatrix as tm
 
-def DrawMonomerGraph(G, outdir):
-    write_dot(G, os.path.join(outdir, "graph.dot"))
+def DrawMonomerGraph(G, outdir, fn="graph"):
+    write_dot(G, os.path.join(outdir, fn + ".dot"))
     try:
-        check_call(['dot', '-Tpng', os.path.join(outdir, "graph.dot"), '-o', os.path.join(outdir, "graph.png")])
+        check_call(['dot', '-Tpng', os.path.join(outdir, fn + ".dot"), '-o', os.path.join(outdir, fn + ".png")])
     except Exception:
         return
 
 
-def buildk_graph(kcnt1, kcnt2, k=1, nodeThr=100, edgeThr=100):
+def buildk_graph(kcnt1, kcnt2, k=1, nodeThr=100, edgeThr=100, map2IA=None):
     mn_set = {tuple(list(x)[:-1]) for x, y in kcnt2.items() if y > nodeThr} | \
              {tuple(list(x)[1:]) for x, y in kcnt2.items() if y > nodeThr}
 
@@ -37,7 +37,10 @@ def buildk_graph(kcnt1, kcnt2, k=1, nodeThr=100, edgeThr=100):
                "#f5fffa", "#f5fffa", "#f5fffa", "#f5fffa"]
         vert = "-".join(list(vert))
         curc = clr[int(lg)]
-        G.add_node(vert, style="filled", fillcolor=curc, label=f'"{vert}[{str(int(cnt_mn))}]"')
+        if map2IA is None or vert not in map2IA:
+            G.add_node(vert, style="filled", fillcolor=curc, label=f'{vert}[{str(int(cnt_mn))}]')
+        else:
+            G.add_node(vert, style="filled", fillcolor=curc, label=f'{vert}\n({map2IA[vert][1]})[{str(int(cnt_mn))}]')
 
     ecnt = 0
     for vt1 in sorted(mn_set):
@@ -66,14 +69,20 @@ def buildk_graph(kcnt1, kcnt2, k=1, nodeThr=100, edgeThr=100):
     return G
 
 
-def BuildMonomerGraph(path_to_mn, sdout, nodeThr=100, edgeThr=100):
+def BuildMonomerGraph(path_to_mn, sdout, nodeThr=100, edgeThr=100, IAmn=None):
+    map2IA = {}
+    if IAmn is not None and IAmn != "":
+        mons = utils.load_fasta(path_to_mn)
+        IAmns = utils.load_fasta(IAmn)
+        map2IA = utils.map_mn(mons, IAmns)
+
     k_cnt = tm.calc_mn_order_stat(sdout, maxk=2)
     edgeThr = int(edgeThr)
 
-    G = buildk_graph(k_cnt[0], k_cnt[1], 1, nodeThr, edgeThr)
+    G = buildk_graph(k_cnt[0], k_cnt[1], 1, nodeThr, edgeThr, map2IA)
     return G
 
-def BuildAndDrawMonomerGraph(path_to_mn, sdout, outdir, nodeThr=100, edgeThr=100):
-    G = BuildMonomerGraph(path_to_mn, sdout, nodeThr=nodeThr, edgeThr=edgeThr)
+def BuildAndDrawMonomerGraph(path_to_mn, sdout, outdir, nodeThr=100, edgeThr=100, IAmn=None):
+    G = BuildMonomerGraph(path_to_mn, sdout, nodeThr=nodeThr, edgeThr=edgeThr, IAmn=IAmn)
     DrawMonomerGraph(G, outdir)
     return G
