@@ -1,4 +1,0 @@
-[submodule "stringdecomposer"]
-	path = stringdecomposer
-	url = https://github.com/ablab/stringdecomposer
-	branch = ismb2021
