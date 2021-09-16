@@ -35,7 +35,7 @@ def parse_args():
                              "minCountFraction * (min occurrence of valuable monomer))", type=float, default=0.9)
     parser.add_argument("--min-traversals", dest="minTraversals",
                         help="minimum HOR(or monocycle) occurance",
-                        type=int, default=100)
+                        type=int, default=10)
     parser.add_argument("--original_mn", dest = "IAmn", help="path to original monomer only for comparing", default="")
     parser.add_argument("-t", dest="threads", help="number of threads(default=1)", default=1, type=int)
     parser.add_argument("-o", dest = "outdir", help="path to output directore", required=True)
