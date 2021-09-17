@@ -2,6 +2,7 @@
 
 import os
 import argparse
+from shutil import copy
 
 import HORmon_pipeline.utils as utils
 import HORmon_pipeline.ExtractValuableMonomers as ValMon
@@ -126,6 +127,17 @@ def main():
 
     SG = smpGr.BuildSimpleGraph(hybridSet, args.seq, fdec, mon_path, edgeThr=getMonomerGraphEdgeThr(fdec, args))
     HORs = DetectHOR.detectHORs(mon_path, fdec, args.outdir, SG, hybridSet, args.minTraversals)
+    if args.IAmn != "":
+        finalOriginalDir = os.path.join(args.outdir, "finalOriginal")
+        if not os.path.exists(finalOriginalDir):
+            os.makedirs(finalOriginalDir)
+        copy(mon_path, finalOriginalDir)
+        fdec = utils.run_SD(mon_path, args.seq, finalOriginalDir, args.threads)
+        G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, finalOriginalDir,
+                                     nodeThr=args.vertThr,
+                                     edgeThr=getMonomerGraphEdgeThr(fdec, args), IAmn=args.IAmn)
+        DetectHOR.saveHOR(HORs, finalOriginalDir)
+
     newNames = rename.RenameMonomers(HORs, hybridDict)
     mon_path = rename.saveNewMn(mon_path, newNames, args.outdir)
     fdec = utils.run_SD(mon_path, args.seq, args.outdir, args.threads)
