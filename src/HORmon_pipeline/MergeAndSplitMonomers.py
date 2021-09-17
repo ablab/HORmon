@@ -52,7 +52,7 @@ def get_blocks(trpl, path_seq, tsv_res):
     for record in SeqIO.parse(path_seq, "fasta"):
         seqs_dict[record.id] = str(record.seq).upper()
 
-    df_sd = pd.read_csv(tsv_res, "\t")
+    df_sd = pd.read_csv(tsv_res, sep = "\t")
     for i in range(1, len(df_sd) - 1):
         if df_sd.iloc[i,4] > 60:
             if df_sd.iloc[i, 1].rstrip("'") == trpl[1]:

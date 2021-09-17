@@ -35,7 +35,7 @@ def get_blocks(path_seq, tsv_B_res, mnidList=None):
     for record in SeqIO.parse(path_seq, "fasta"):
         seqs_dict[record.id] = str(record.seq).upper()
 
-    df_sd = pd.read_csv(tsv_B_res, "\t")
+    df_sd = pd.read_csv(tsv_B_res, sep = "\t")
     blocks = []
     for i in range(len(df_sd)):
         if df_sd.iloc[i,4] > 60:
@@ -46,7 +46,7 @@ def get_blocks(path_seq, tsv_B_res, mnidList=None):
     return blocks
 
 def get_monocent(tsv_res):
-    df_sd = pd.read_csv(tsv_res, "\t")
+    df_sd = pd.read_csv(tsv_res, sep = "\t")
     mncent = []
     for i in range(len(df_sd)):
         if df_sd.iloc[i, 4] > 60:
