@@ -16,6 +16,8 @@ import HORmon_pipeline.MonoRun as monorun
 import HORmon_pipeline.BuildSimpleGraph as smpGr
 import HORmon_pipeline.TriplesMatrix as tm
 import hormon_extract_hors
+import build_horconsensus
+import convert2bed
 
 def parse_args():
     parser = argparse.ArgumentParser(description="HORmon: updating monomers to make it consistent with CE postulate, and canonical HOR inferencing")
@@ -156,6 +158,9 @@ def main():
 
     hordecfile = os.path.join(args.outdir, "HORdecomposition.tsv")
     hormon_extract_hors.HORdecomposition(fdec, horfile, hordecfile)
+
+    bedfile = convert2bed.conver2bed(fdec)
+    build_horconsensus.build_horcons(args.seq, bedfile, os.path.join(args.outdir, "HOR_consensus"), horfile)
 
 if __name__ == "__main__":
     main()

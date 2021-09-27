@@ -297,6 +297,23 @@ def getHORconsensus(hors_tsv, monodec, ref, consensus, mono_outfilename, outdir)
         print("Paired wasn't generated - no pairs found")
 
 
+def build_horcons(sepath, bedfile, odir, horspath, extend=4, seed=123):
+    random.seed(int(seed))
+    ref = load_fasta(sepath, "map")
+
+    if not os.path.exists(odir):
+        os.makedirs(odir)
+
+    mono_outfilename = os.path.join(odir, "monomer_consensus.fasta")
+    monodec, monomers = load_bedfile(bedfile)
+    consensus = build_monoconsensus(monodec, ref, int(extend), os.path.join(odir, "clustal_alns"))
+    save_fasta(mono_outfilename, consensus)
+    print("Monomer consensus can be found", mono_outfilename)
+
+    if horspath != None:
+        getHORconsensus(horspath, monodec, ref, consensus, mono_outfilename, odir)
+
+
 def main():
     parser = argparse.ArgumentParser(description='Extracts monomer/HOR consensus from annotation')
     parser.add_argument('sequences', help='fasta-file with annotated sequences')
@@ -306,22 +323,8 @@ def main():
     parser.add_argument('--extend',  help='number of bp to extend monomer alignment', default=4, required=False)
     parser.add_argument('--seed',  help='seed for colors generation in bed-files', default=123, required=False)
     args = parser.parse_args()
-    
-    random.seed(int(args.seed))
-    ref = load_fasta(args.sequences, "map")
-    bedfile = args.annotation
-    
-    if not os.path.exists(args.outdir):
-        os.makedirs(args.outdir)
 
-    mono_outfilename = os.path.join(args.outdir, "monomer_consensus.fasta")
-    monodec, monomers = load_bedfile(bedfile)
-    consensus = build_monoconsensus(monodec, ref, int(args.extend), os.path.join(args.outdir, "clustal_alns"))
-    save_fasta(mono_outfilename, consensus)
-    print("Monomer consensus can be found", mono_outfilename)
-
-    if args.hors != None:
-        getHORconsensus(args.hors, monodec, ref, consensus, mono_outfilename, args.outdir)
+    build_horcons(args.sequences, args.annotation, args.outdir, args.hors, args.extend, args.seed)
 
 
 if __name__ == "__main__":
