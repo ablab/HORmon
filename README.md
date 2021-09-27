@@ -49,7 +49,7 @@ Output:
 * `toy8/mn.fa` -- final monomers
 * `toy8/final_decomposition.tsv` -- monomer decomposition
 * `toy8/HORs.tsv` -- HORs description
-* `toy8/???` -- HORs decomposition
+* `toy8/HORdecomposition.tsv` -- HORs decomposition
 
 ## Feedback and bug reports
 Your comments, bug reports, anf suggestions are very welcomed. They will help up to further improve HORmon. 
