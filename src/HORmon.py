@@ -15,6 +15,7 @@ import HORmon_pipeline.RenameMonomers as rename
 import HORmon_pipeline.MonoRun as monorun
 import HORmon_pipeline.BuildSimpleGraph as smpGr
 import HORmon_pipeline.TriplesMatrix as tm
+import hormon_extract_hors
 
 def parse_args():
     parser = argparse.ArgumentParser(description="HORmon: updating monomers to make it consistent with CE postulate, and canonical HOR inferencing")
@@ -146,13 +147,15 @@ def main():
                                      edgeThr=getMonomerGraphEdgeThr(fdec, args))
 
     HORs = rename.updateHORs(HORs, newNames)
-    DetectHOR.saveHOR(HORs, args.outdir)
+    horfile = DetectHOR.saveHOR(HORs, args.outdir)
 
     mnrundir = os.path.join(args.outdir, "MonoRun")
     if not os.path.exists(mnrundir):
         os.makedirs(mnrundir)
     monorun.BuildAndShowMonorunGraph(fdec, mnrundir, vLim=args.vertThr, eLim=getMonomerGraphEdgeThr(fdec, args))
 
+    hordecfile = os.path.join(args.outdir, "HORdecomposition.tsv")
+    hormon_extract_hors.HORdecomposition(fdec, horfile, hordecfile)
 
 if __name__ == "__main__":
     main()

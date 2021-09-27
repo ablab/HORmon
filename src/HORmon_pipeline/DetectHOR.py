@@ -76,9 +76,11 @@ def detectHORs(mon_path, sd_path, outdir, G, hybridSet, minTrav):
     return cycles
 
 def saveHOR(cycles, outdir):
-    with open(os.path.join(outdir, "HORs.tsv"), "w") as fw:
+    outfile = os.path.join(outdir, "HORs.tsv")
+    with open(outfile, "w") as fw:
         csv_writer = csv.writer(fw, delimiter='\t')
         horid = 1
         for cycle in cycles:
             csv_writer.writerow(["H" + str(horid), ",".join(cycle)])
             horid += 1
+    return outfile

@@ -274,6 +274,29 @@ def divide_into_monomers(hors_lst, hors, monomers, horfile, monofile, outtsv):
     return hors_res, res, bed
 
 
+def getHORconsensus(hors_tsv, monodec, ref, consensus, mono_outfilename, outdir):
+    hors = load_horascycle(hors_tsv)
+    hor_consensus = build_pairconsensus(hors, monodec, ref, os.path.join(outdir, "clustal_alns"))
+    if len(hor_consensus) > 0:
+        hor_outfilename = os.path.join(outdir, "hor_consensus.fasta")
+        hor_consensus_shifted, pair_monomers, bed = divide_into_monomers(hors, hor_consensus, consensus,
+                                                                         hor_outfilename, mono_outfilename,
+                                                                         os.path.join(outdir, "sd.tsv"))
+        hor_outfilename = os.path.join(outdir, "hor_consensus.fasta")
+        save_fasta(hor_outfilename, hor_consensus_shifted)
+        print("HOR consensus can be found", hor_outfilename)
+        pmono_outfilename = os.path.join(outdir, "monomer_paired_consensus.fasta")
+        save_fasta(pmono_outfilename, pair_monomers)
+        print("Paired monomer consensus can be found", pmono_outfilename)
+        outfilename = os.path.join(outdir, "monomer_paired_consensus.bed")
+        with open(outfilename, "w") as fout:
+            for ln in bed:
+                fout.write(ln + "\n")
+        print("Paired monomer consensus bed can be found", outfilename)
+    else:
+        print("Paired wasn't generated - no pairs found")
+
+
 def main():
     parser = argparse.ArgumentParser(description='Extracts monomer/HOR consensus from annotation')
     parser.add_argument('sequences', help='fasta-file with annotated sequences')
@@ -298,25 +321,8 @@ def main():
     print("Monomer consensus can be found", mono_outfilename)
 
     if args.hors != None:
-       hors_tsv = args.hors
-       hors = load_horascycle(hors_tsv)
-       hor_consensus = build_pairconsensus(hors, monodec, ref, os.path.join(args.outdir, "clustal_alns"))
-       if len(hor_consensus) > 0:
-           hor_outfilename = os.path.join(args.outdir, "hor_consensus.fasta")
-           hor_consensus_shifted, pair_monomers, bed = divide_into_monomers(hors, hor_consensus, consensus, hor_outfilename, mono_outfilename, os.path.join(args.outdir, "sd.tsv"))
-           hor_outfilename = os.path.join(args.outdir, "hor_consensus.fasta")
-           save_fasta(hor_outfilename, hor_consensus_shifted)
-           print("HOR consensus can be found", hor_outfilename)
-           pmono_outfilename = os.path.join(args.outdir, "monomer_paired_consensus.fasta")
-           save_fasta(pmono_outfilename, pair_monomers)
-           print("Paired monomer consensus can be found", pmono_outfilename)
-           outfilename = os.path.join(args.outdir, "monomer_paired_consensus.bed")
-           with open(outfilename, "w") as fout:
-               for ln in bed:
-                   fout.write(ln + "\n")
-           print("Paired monomer consensus bed can be found", outfilename)
-       else:
-           print("Paired wasn't generated - no pairs found")
+        getHORconsensus(args.hors, monodec, ref, consensus, mono_outfilename, args.outdir)
+
 
 if __name__ == "__main__":
     main()
