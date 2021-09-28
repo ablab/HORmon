@@ -80,7 +80,9 @@ def shift(hor_lst):
             break
     return hor_lst[min_ind:] + hor_lst[:min_ind]
 
-def load_horascycle(filename):
+def load_horascycle(filename, log=None):
+    if log is not None:
+        log.info("\n= Loading HORs cycles =", indent=1)
     hors = []
     hor_name= ""
     mono_mp = {}
@@ -92,7 +94,10 @@ def load_horascycle(filename):
             hor_name, hor_seq = ln.strip().split("\t")[:2]
             hor_lst = hor_seq.split(",")[:-1]
             #hor_lst = shift(hor_lst)
-            print(hor_lst)
+            if log is None:
+                print(hor_lst)
+            else:
+                log.info("Loaded HOR: " + str(hor_lst), indent=2)
             hors.append([hor_name, hor_lst])
     return hors
 
@@ -158,7 +163,7 @@ def edist(lst):
     aln = edlib.getNiceAlignment(result, str(lst[0]), str(lst[1]))
     return result["editDistance"], aln
 
-def glue_pairs(p1, p2):
+def glue_pairs(p1, p2, log=None):
     max_len = 200
     eds = []
     ed, aln = edist([p1[-max_len:], p2])
@@ -174,11 +179,15 @@ def glue_pairs(p1, p2):
     if cur_len > longest:
         longest, longest_ind = cur_len, len(aln["matched_aligned"]) - cur_len
     i, j = len(p1) - max_len + len(aln["query_aligned"][:longest_ind].replace("-", "")), len(aln["target_aligned"][:longest_ind].replace("-", ""))
-    print(i, j, ed, len(p1[:i] + p2[j:]))
-    print("")
+
+    if log is None:
+        print(i, j, ed, len(p1[:i] + p2[j:]))
+        print("")
+    else:
+        log.info("i=" + str(i) + "; j=" + str(j) +"; edit dist=" + str(ed) + "; pair union len=" + str(len(p1[:i] + p2[j:])), indent=3)
     return i, j
 
-def build_monoconsensus(monodec, ref, step, clustal_dir):
+def build_monoconsensus(monodec, ref, step, clustal_dir, log=None):
     mappings = {}
     for i in range(len(monodec)):
         m_name, m_s, m_e, m_idnt = monodec[i][1], int(monodec[i][2]), int(monodec[i][3]), float(monodec[i][4])
@@ -191,14 +200,20 @@ def build_monoconsensus(monodec, ref, step, clustal_dir):
                 mappings[m_name].append(make_record(ref[monodec[i][0]].seq[max(0, m_s - step): min(m_e + step, len(ref[monodec[i][0]].seq) )].reverse_complement(), m_name + str(m_s) + "_rev", m_name + str(m_s) + "_rev"))
     m_consensus = []
     for m in mappings:
-        print(m)
+        if log != None:
+            log.info("Detecting monoconsensus for " + m, indent=1)
+        else:
+            print(m)
         consensus = align_mappings(mappings[m], clustal_dir, m)
         consensus = consensus[step : len(consensus)-step]
         cur_consensus = make_record(Seq(consensus), m, m)
         m_consensus.append(cur_consensus)
     return m_consensus
 
-def build_pairconsensus(hors, monodec, ref, clustal_dir):
+def build_pairconsensus(hors, monodec, ref, clustal_dir, log=None):
+    if log is not None:
+        log.info("\n= Build Pair Consensus =", indent=1)
+
     hors_seq = []
     for hor_desc in hors:
         hor = hor_desc[1]
@@ -216,38 +231,62 @@ def build_pairconsensus(hors, monodec, ref, clustal_dir):
                             mappings.append(make_record(ref[monodec[j][0]].seq[s1: e2], m1+"_" + m2 + str(s1), m1 + "_" +m2 + str(s1) ))
                         else:
                             mappings.append(make_record(ref[monodec[j][0]].seq[s1: e2].reverse_complement(), m1+"_" + m2 + str(s1) + "_rev", m1 + "_" +m2 + str(s1) + "_rev" ))
-            print("pair: ", m1, m2, len(mappings))
+
+            if log is None:
+                print("pair: ", m1, m2, len(mappings))
+            else:
+                log.info("# pairs(" + m1 + ", " + m2 + ") = " + str(len(mappings)), indent=2)
+
             if len(mappings) > 0:
                 pairs_consensus.append(align_mappings(mappings, clustal_dir, m1+"_" + m2))
+
         if len(pairs_consensus) > 0:
             cur_consensus = ""
             border = []
             for i in range(len(pairs_consensus)):
-                print("Pair ", i)
-                border.append(glue_pairs(pairs_consensus[i], pairs_consensus[(i+1)%len(pairs_consensus)]))
+                if log is None:
+                    print("Pair ", i)
+                else:
+                    log.info("Handle pair #" + str(i), indent=2)
+                border.append(glue_pairs(pairs_consensus[i], pairs_consensus[(i+1)%len(pairs_consensus)], log))
+
             l, r = border[len(pairs_consensus)-1][1], 0
             for i in range(len(pairs_consensus)):
                 r = border[i][0]
                 if l > r:
-                   print("Something went wrong!", i, l, r)
-                   exit(-1)
+                   if log is None:
+                       print("Something went wrong!", i, l, r)
+                       exit(-1)
+                   else:
+                       log.error("Something went wrong! " + str(i) + " " + str(l) + " " + str(r))
+
                 cur_consensus += pairs_consensus[i][l: r]
                 l = border[i][1]
-            print(len(cur_consensus))
+
+            if log is None:
+                print(len(cur_consensus))
+            else:
+                log.info("\n")
+                log.info("HOR consensus len=" + str(len(cur_consensus)), indent=2)
+
             hors_seq.append(make_record(Seq(cur_consensus), hor_desc[0], hor_desc[0], str(len(cur_consensus)) + "bp " + ",".join(hor) ))
         else:
             hors_seq.append(make_record(Seq(""), hor_desc[0], hor_desc[0], str(0) + "bp " + ",".join(hor) ))
     return hors_seq
 
 
-def run(sequences, monomers, num_threads, out_file):
+def run(sequences, monomers, num_threads, out_file, log=None):
+    if log is not None:
+        log.info("Run StringDecomposer", indent=2)
     utils.sys_call([sd_run, sequences, monomers, "-t", str(num_threads), "--out-file", out_file])
     with open(out_file + ".tsv", 'r') as f:
         out_decomposition = "".join(f.readlines())
     return out_decomposition
 
 
-def divide_into_monomers(hors_lst, hors, monomers, horfile, monofile, outtsv):
+def divide_into_monomers(hors_lst, hors, monomers, horfile, monofile, outtsv, log=None):
+    if log is not None:
+        log.info("\n= Divide into monomers =", indent=1)
     hors_res, res, bed = [], [], []
     for i in range(len(hors)):
         h, start_mono, hor_len = hors[i], hors_lst[i][1][0], len(hors_lst[i][1])
@@ -255,17 +294,29 @@ def divide_into_monomers(hors_lst, hors, monomers, horfile, monofile, outtsv):
           triple_hors = []
           triple_hors.append(make_record(h.seq + h.seq + h.seq, h.id, h.name, h.description))
           save_fasta(horfile, triple_hors)
-          decomposition = run(horfile, monofile, "1", outtsv[:-len(".tsv")])
+          decomposition = run(horfile, monofile, "1", outtsv[:-len(".tsv")], log)
           inHOR, start_shift = False, 0
           newhor_seq = ""
-          print(start_mono, hor_len, len(h.seq))
+
+          if log is None:
+              print(start_mono, hor_len, len(h.seq))
+          else:
+              log.info("Start monomer=" + str(start_mono) + ", HOR len(#mon)=" + str(hor_len) + ", HOR len(bp)=" + str(len(h.seq)), indent=2)
           for ln in decomposition.split("\n")[1:-1]:
               ref, mono, start, end, score = ln.split("\t")[:5]
               if mono == start_mono:
                   inHOR, start_shift = True, int(start)
-                  print("shift", start_shift)
+                  if log is None:
+                      print("shift", start_shift)
+                  else:
+                      log.info("Start monomer shift=" + str(start_shift), indent=2)
+
               if inHOR and len(res) < hor_len:
-                  print(mono, ref + ":" + str(int(start) - start_shift) + "-" + str(int(end) + 1 - start_shift), len(res) )
+                  if log is None:
+                      print(mono, ref + ":" + str(int(start) - start_shift) + "-" + str(int(end) + 1 - start_shift), len(res) )
+                  else:
+                      log.info("Monomer# " + str(len(res)) + ": " + mono + " " + ref + ":" + str(int(start) - start_shift) + "-" + str(int(end) + 1 - start_shift), indent=2)
+
                   res.append(make_record(triple_hors[0].seq[int(start): int(end) + 1], mono, mono, ref + ":" + str(int(start) - start_shift) + "-" + str(int(end) + 1 - start_shift) ))
                   r, g, b = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
                   bed.append("\t".join([ref, str(int(start) - start_shift), str(int(end) + 1 - start_shift), mono, str(int(float(score))), "+", str(int(start) - start_shift), str(int(end) + 1 - start_shift), ",".join([str(r), str(g), str(b)]) ]))
@@ -274,30 +325,46 @@ def divide_into_monomers(hors_lst, hors, monomers, horfile, monofile, outtsv):
     return hors_res, res, bed
 
 
-def getHORconsensus(hors_tsv, monodec, ref, consensus, mono_outfilename, outdir):
-    hors = load_horascycle(hors_tsv)
-    hor_consensus = build_pairconsensus(hors, monodec, ref, os.path.join(outdir, "clustal_alns"))
+def getHORconsensus(hors_tsv, monodec, ref, consensus, mono_outfilename, outdir, log=None):
+    hors = load_horascycle(hors_tsv, log)
+    hor_consensus = build_pairconsensus(hors, monodec, ref, os.path.join(outdir, "clustal_alns"), log=log)
+
     if len(hor_consensus) > 0:
         hor_outfilename = os.path.join(outdir, "hor_consensus.fasta")
         hor_consensus_shifted, pair_monomers, bed = divide_into_monomers(hors, hor_consensus, consensus,
                                                                          hor_outfilename, mono_outfilename,
-                                                                         os.path.join(outdir, "sd.tsv"))
+                                                                         os.path.join(outdir, "sd.tsv"), log)
         hor_outfilename = os.path.join(outdir, "hor_consensus.fasta")
         save_fasta(hor_outfilename, hor_consensus_shifted)
-        print("HOR consensus can be found", hor_outfilename)
+
+        if log is not None:
+            log.info("HOR consensus can be found" + hor_outfilename, indent=1)
+        else:
+            print("HOR consensus can be found", hor_outfilename)
+
         pmono_outfilename = os.path.join(outdir, "monomer_paired_consensus.fasta")
         save_fasta(pmono_outfilename, pair_monomers)
-        print("Paired monomer consensus can be found", pmono_outfilename)
+
+        if log is not None:
+            log.info("Paired monomer consensus can be found " + pmono_outfilename, indent=1)
+        else:
+            print("Paired monomer consensus can be found", pmono_outfilename)
+
+
         outfilename = os.path.join(outdir, "monomer_paired_consensus.bed")
         with open(outfilename, "w") as fout:
             for ln in bed:
                 fout.write(ln + "\n")
-        print("Paired monomer consensus bed can be found", outfilename)
+
+        if log is not None:
+            log.info("Paired monomer consensus bed can be found " + outfilename, indent=1)
+        else:
+            print("Paired monomer consensus bed can be found", outfilename)
     else:
         print("Paired wasn't generated - no pairs found")
 
 
-def build_horcons(sepath, bedfile, odir, horspath, extend=4, seed=123):
+def build_horcons(sepath, bedfile, odir, horspath, extend=4, seed=123, log=None):
     random.seed(int(seed))
     ref = load_fasta(sepath, "map")
 
@@ -306,12 +373,16 @@ def build_horcons(sepath, bedfile, odir, horspath, extend=4, seed=123):
 
     mono_outfilename = os.path.join(odir, "monomer_consensus.fasta")
     monodec, monomers = load_bedfile(bedfile)
-    consensus = build_monoconsensus(monodec, ref, int(extend), os.path.join(odir, "clustal_alns"))
+    consensus = build_monoconsensus(monodec, ref, int(extend), os.path.join(odir, "clustal_alns"), log=log)
     save_fasta(mono_outfilename, consensus)
-    print("Monomer consensus can be found", mono_outfilename)
+
+    if log is not None:
+        log.info("\nMonomer consensus can be found " + mono_outfilename, indent=1)
+    else:
+        print("Monomer consensus can be found ", mono_outfilename)
 
     if horspath != None:
-        getHORconsensus(horspath, monodec, ref, consensus, mono_outfilename, odir)
+        getHORconsensus(horspath, monodec, ref, consensus, mono_outfilename, odir, log=log)
 
 
 def main():

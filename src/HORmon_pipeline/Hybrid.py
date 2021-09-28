@@ -39,14 +39,14 @@ def isHybridContext(main_mn, mn1, mn2, kcnt2, edgeThr=100):
         return False
     return True
 
-def isHybrid(main_mn, mn1, mn2, main_rd, kcnt2, edgeThr):
+def isHybrid(main_mn, mn1, mn2, main_rd, kcnt2, edgeThr, log):
     pr, sf, idn = get_hybrid_len(main_mn, mn1, mn2)
     if idn < 6 and idn * 1.5 < main_rd and isHybridContext(main_mn.id, mn1.id, mn2.id, kcnt2, edgeThr):
-        print("Hybrid", main_mn.id, main_rd, idn, mn1.id, mn2.id, pr, sf)
+        log.info(f'Potential hybrid: {main_mn.id}={mn1.id}[:{pr}]+{mn2.id}[{sf}:]; hybrid distortion={idn:.3f}; closest mn distortion={main_rd:.3f}', indent=2)
         return True
     return False
 
-def getHybridINFO(mnpath, decpath, edgeThr):
+def getHybridINFO(mnpath, decpath, edgeThr, log):
     kcnt = TriplesMatrix.calc_mn_order_stat(decpath, maxk=2)
     vcnt = kcnt[0]
     kcnt2 = kcnt[1]
@@ -61,16 +61,18 @@ def getHybridINFO(mnpath, decpath, edgeThr):
             if i != j:
                 rd[monCA[i].id] = min(rd[monCA[i].id], utils.seq_identity(monCA[i].seq, monCA[j].seq))
 
+    log.info("= Detect potential hybrids =", indent=1)
     for i in range(len(monCA)):
         for j in range(len(monCA)):
             for g in range(len(monCA)):
                 if i != j and j != g and i != g:
-                    if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id], kcnt2, edgeThr):
+                    if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id], kcnt2, edgeThr, log):
                         pr, sf, idn = get_hybrid_len(monCA[i], monCA[j], monCA[g])
                         if monCA[i].id in hybridSet:
                             continue
                         hybridSet.add(monCA[i].id)
-
+    log.info(f"Potential hybrid set: {hybridSet}", indent=1)
+    log.info("= Detect hybrids =", indent=1)
     for i in range(len(monCA)):
         for j in range(len(monCA)):
             for g in range(len(monCA)):
@@ -78,7 +80,7 @@ def getHybridINFO(mnpath, decpath, edgeThr):
                     continue
 
                 if i != j and j != g and i != g:
-                    if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id], kcnt2, edgeThr):
+                    if isHybrid(monCA[i], monCA[j], monCA[g], rd[monCA[i].id], kcnt2, edgeThr, log):
                         pr, sf, idn = get_hybrid_len(monCA[i], monCA[j], monCA[g])
                         if monCA[i].id in hybridIdn and idn > hybridIdn[monCA[i].id]:
                             continue
@@ -86,4 +88,5 @@ def getHybridINFO(mnpath, decpath, edgeThr):
                         hybridIdn[monCA[i].id] = idn
                         hybridDict[monCA[i].id] = (monCA[j].id, monCA[g].id)
 
+    log.info(f'Hybrid set: {hybridSet}', indent=1)
     return hybridSet, hybridDict
