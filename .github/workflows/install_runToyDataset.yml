@@ -27,7 +27,7 @@ jobs:
                    conda install -y --file requirements.txt
             - name: Run monomer inference on toy cen8 dataset
               run: |
-                   python3 src/monomer_inference.py -seq test_data/cen8toy.fa -mon test_data/AlphaSat.fa -o toy8_mi
+                   python3 HORmon/monomer_inference.py -seq test_data/cen8toy.fa -mon test_data/AlphaSat.fa -o toy8_mi
             - name: Run HORmon on toy cen8 dataset
               run: |
-                   python3 src/HORmon.py --seq test_data/cen8toy.fa --mon toy8_mi/final/monomers.fa --cen-id 8 --monomer-thr 2 --edge-thr 2 --min-traversals 2 -o toy8
+                   python3 HORmon/HORmon.py --seq test_data/cen8toy.fa --mon toy8_mi/final/monomers.fa --cen-id 8 --monomer-thr 2 --edge-thr 2 --min-traversals 2 -o toy8

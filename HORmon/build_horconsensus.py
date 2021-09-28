@@ -19,7 +19,7 @@ import subprocess
 import edlib
 import random
 
-import HORmon_pipeline.utils as utils
+import HORmon.HORmon_pipeline.utils as utils
 
 MONOIDNT = 95
 INF=10000000
