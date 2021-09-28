@@ -10,13 +10,13 @@ import os
 import pandas as pd
 from Bio import SeqIO
 
-import HORmon_pipeline.DetectHOR as DetectHOR
-import HORmon_pipeline.MergeAndSplitMonomers as splitMn
-from HORmon_pipeline.utils import rc
-import HORmon_pipeline.utils as utils
-from HORmon_pipeline.utils import run_SD
-import HORmon_pipeline.BuildSimpleGraph as simpleGr
-import HORmon_pipeline.TriplesMatrix as tm
+import HORmon.HORmon_pipeline.DetectHOR as DetectHOR
+import HORmon.HORmon_pipeline.MergeAndSplitMonomers as splitMn
+from HORmon.HORmon_pipeline.utils import rc
+import HORmon.HORmon_pipeline.utils as utils
+from HORmon.HORmon_pipeline.utils import run_SD
+import HORmon.HORmon_pipeline.BuildSimpleGraph as simpleGr
+import HORmon.HORmon_pipeline.TriplesMatrix as tm
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 

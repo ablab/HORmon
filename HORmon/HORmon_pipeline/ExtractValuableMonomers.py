@@ -4,10 +4,10 @@ import os
 import pandas as pd
 import numpy as np
 
-import HORmon_pipeline.utils as utils
-from HORmon_pipeline.utils import get_blocks
-from HORmon_pipeline.utils import seq_identity
-from HORmon_pipeline.utils import rc
+import HORmon.HORmon_pipeline.utils as utils
+from HORmon.HORmon_pipeline.utils import get_blocks
+from HORmon.HORmon_pipeline.utils import seq_identity
+from HORmon.HORmon_pipeline.utils import rc
 
 def get_sq_sum(blocks, dists):
     dists = np.array(dists)

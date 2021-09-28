@@ -7,8 +7,8 @@ from networkx.drawing.nx_agraph import write_dot
 from subprocess import check_call
 import numpy as np
 
-import HORmon_pipeline.utils as utils
-import HORmon_pipeline.TriplesMatrix as TriplesMatrix
+import HORmon.HORmon_pipeline.utils as utils
+import HORmon.HORmon_pipeline.TriplesMatrix as TriplesMatrix
 
 class LongEdge:
     def __init__(self):

@@ -6,8 +6,8 @@ from networkx.drawing.nx_agraph import write_dot
 from subprocess import check_call
 import numpy as np
 import os
-import HORmon_pipeline.utils as utils
-import HORmon_pipeline.TriplesMatrix as tm
+import HORmon.HORmon_pipeline.utils as utils
+import HORmon.HORmon_pipeline.TriplesMatrix as tm
 
 def DrawMonomerGraph(G, outdir, fn="graph"):
     write_dot(G, os.path.join(outdir, fn + ".dot"))

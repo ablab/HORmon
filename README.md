@@ -24,7 +24,7 @@ Installing from source
 ```
 git clone https://github.com/ablab/centromere-architect.git
 cd centromere-architect
-???
+python3 setup.py install
 ```
 
 Then, HORmon is available as `monomer_inference` and `HORmon` 
@@ -34,7 +34,7 @@ Then, HORmon is available as `monomer_inference` and `HORmon`
 Monomer Inference script needs two parameters: (1) (centromeric) sequence and (2) monomer template:
 
 ```
-python3 src/monomer_inference.py -seq test_data/cen8toy.fa -mon test_data/AlphaSat.fa -o toy8_mi
+monomer_inference -seq test_data/cen8toy.fa -mon test_data/AlphaSat.fa -o toy8_mi
 ```
 
 Resulting monomers can be found in ```toy8_mi/final/monomers.fa``` and sequence annotation in ```toy8_mi/final/final_decomposition.tsv```.
@@ -42,7 +42,7 @@ Resulting monomers can be found in ```toy8_mi/final/monomers.fa``` and sequence 
 ### HORmon
 HORmon takes as input: (1) (centromeric) sequence, (2) monomers from "monomer_inference" stage, (3) centromere id for nicer output, (4) the minimum number of occurrence for monomers, monomers pairs and HOR and (5) output folder
 ```
-python3 src/HORmon.py --seq test_data/cen8toy.fa --mon toy8_mi/final/monomers.fa --cen-id 8 --monomer-thr 2 --edge-thr 2 --min-traversals 2 -o toy8
+HORmon --seq test_data/cen8toy.fa --mon toy8_mi/final/monomers.fa --cen-id 8 --monomer-thr 2 --edge-thr 2 --min-traversals 2 -o toy8
 ```
 
 Output:

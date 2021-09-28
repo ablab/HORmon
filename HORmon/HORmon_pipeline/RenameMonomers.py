@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-import HORmon_pipeline.utils as utils
+import HORmon.HORmon_pipeline.utils as utils
 
 def getNameById(id):
     if id == 0:
