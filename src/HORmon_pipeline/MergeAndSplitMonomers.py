@@ -32,8 +32,8 @@ cntMerge = 0
 cntSplit = 0
 tsv_res = ""
 
-def MergeMonomers(mn1, mn2, odir, mons, path_seq):
-    print("====MERGE===" + mn1.id + "+" + mn2.id)
+def MergeMonomers(mn1, mn2, odir, mons, path_seq, log):
+    log.info(mn1.id + " + " + mn2.id, indent=3)
     global tsv_res
     resmns = [mn for mn in mons if mn.id != mn1.id and mn.id != mn2.id]
 
@@ -56,9 +56,6 @@ def get_blocks(trpl, path_seq, tsv_res):
     for i in range(1, len(df_sd) - 1):
         if df_sd.iloc[i,4] > 60:
             if df_sd.iloc[i, 1].rstrip("'") == trpl[1]:
-                #print(df_sd.iloc[i, 1])
-                #print(df_sd.iloc[i - 1, 1], df_sd.iloc[i, 1], df_sd.iloc[i + 1, 1])
-                #print(trpl)
                 curtr = trpl
                 if df_sd.iloc[i - 1, 1][-1] == "'":
                     curtr = curtr[::-1]
@@ -75,7 +72,6 @@ def get_blocks(trpl, path_seq, tsv_res):
 
 
 def SplitMn(trpl, nnm, odir, mons, path_seq):
-    print("====SPLIT===", trpl, nnm)
     global tsv_res
     resmns = [mn for mn in mons if mn.id != trpl[1]]
 
@@ -95,7 +91,8 @@ def SplitMn(trpl, nnm, odir, mons, path_seq):
     return resmns
 
 
-def Iteration(iterNum, seq_path, outdir, monsPath, thread=1):
+def Iteration(iterNum, seq_path, outdir, monsPath, thread=1, log=None):
+    log.info("Iteration #" + str(iterNum), indent=1)
     global tsv_res
     global cntMerge
     global cntSplit
@@ -110,8 +107,6 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1):
     tsv_res = run_SD(monsPath, seq_path, os.path.join(odir, "InitSD"), thread)
     k_cnt = TriplesMatrix.calc_mn_order_stat(tsv_res, maxk=3)
     posscore, cenvec = TriplesMatrix.handleAllMn(k_cnt[2], k_cnt[1], thr=0)
-
-    print("Similarity: ", sim)
 
     def get_best(posscore):
         bstm = (-1, -1)
@@ -132,8 +127,8 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1):
     bstm, bp = get_best(posscore)
     if bp > 0.4:
         cntMerge += 1
-        print("Merge Midle", "position score=", bp, " similaroty score=", sim[(mons[bstm[0]].id, mons[bstm[1]].id)])
-        resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path)
+        log.info("MERGE Midle position score=" + str(bp) + " similaroty score= " + str(sim[(mons[bstm[0]].id, mons[bstm[1]].id)]), indent=2)
+        resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path, log)
         utils.savemn(os.path.join(odir, "mn.fa"), resmn)
         return True
 
@@ -141,8 +136,8 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1):
     bstm, bp = get_best(posscore)
     if bp > 0.4:
         cntMerge += 1
-        print("Merge Prefix", "position score=", bp, " similaroty score=", sim[(mons[bstm[0]].id, mons[bstm[1]].id)])
-        resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path)
+        log.info("MERGE Prefix position score=" + str(bp) + " similaroty score=" + str(sim[(mons[bstm[0]].id, mons[bstm[1]].id)]), indent=2)
+        resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path, log)
         utils.savemn(os.path.join(odir, "mn.fa"), resmn)
         return True
 
@@ -150,14 +145,16 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1):
     bstm, bp = get_best(posscore)
     if bp > 0.4:
         cntMerge += 1
-        print("Merge Suffix", "position score=", bp, " similaroty score=", sim[(mons[bstm[0]].id, mons[bstm[1]].id)])
-        resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path)
+        log.info("MERGE Suffix position score=" + str(bp) + " similaroty score=" + str(sim[(mons[bstm[0]].id, mons[bstm[1]].id)]), indent=2)
+        resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path, log)
         utils.savemn(os.path.join(odir, "mn.fa"), resmn)
         return True
 
     exchTrp = TriplesMatrix.SplitAllMn(k_cnt[2], k_cnt[1])
     if len(exchTrp) > 0:
+        log.info("SPLIT", indent=2)
         for key in exchTrp.keys():
+            log.info("Triplet to split: " + str(key) + " new mn name:"  + str(exchTrp[key]), indent=3)
             cntSplit += 1
             resmn = SplitMn(key, exchTrp[key], odir, mons, seq_path)
             utils.savemn(os.path.join(odir, "mn.fa"), resmn)
@@ -165,7 +162,7 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1):
     return False
 
 
-def MergeSplitMonomers(mns_path, seq_path, outdir, thr, cenid):
+def MergeSplitMonomers(mns_path, seq_path, outdir, thr, cenid, log):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -173,12 +170,12 @@ def MergeSplitMonomers(mns_path, seq_path, outdir, thr, cenid):
 
     shutil.copyfile(mns_path, os.path.join(outdir, "mn.fa"))
     iterNum = 0
-    while (Iteration(iterNum, seq_path, outdir, mns_path, thr)):
+    while (Iteration(iterNum, seq_path, outdir, mns_path, thr, log=log)):
         iterNum += 1
         mns_path = os.path.join(outdir, "i" + str(iterNum - 1), "mn.fa")
         shutil.copyfile(mns_path, os.path.join(outdir, "mn.fa"))
 
-    print(os.path.join(outdir, "i" + str(iterNum), "InitSD", "final_decomposition.tsv"))
+    log.info("Final decomposition: " + os.path.join(outdir, "i" + str(iterNum), "InitSD", "final_decomposition.tsv"), indent=1)
     shutil.copyfile(os.path.join(outdir, "i" + str(iterNum), "InitSD", "final_decomposition.tsv"),
                     os.path.join(outdir, "fdec.tsv"))
 

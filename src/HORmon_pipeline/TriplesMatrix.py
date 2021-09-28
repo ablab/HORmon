@@ -11,7 +11,6 @@ def calc_mn_order_stat(sdtsv, maxk = 1, exchange=None, exchTrp=None):
         for row in csv_reader:
             if row[2] == "start":
                 continue
-            #print(row[1], end=" ")
             revv = True if row[1][-1] == "'" else False
             row[1] = row[1].rstrip("'")
             if exchange is not None and row[1] in exchange:
@@ -20,11 +19,7 @@ def calc_mn_order_stat(sdtsv, maxk = 1, exchange=None, exchTrp=None):
 
     if exchTrp is not None:
         for i in range(1, len(rows) - 1):
-            #if rows[i][1] == "mn_43":
-            #    print((rows[i+1][1],rows[i][1],rows[i-1][1]))
-
             if (rows[i+1][1],rows[i][1],rows[i-1][1]) in exchTrp:
-                #print("exchange")
                 rows[i][1] = exchTrp[(rows[i+1][1],rows[i][1],rows[i-1][1])]
 
     for i, row in enumerate(rows):
@@ -135,7 +130,6 @@ def handleAllMn(trp_cnt, db_cnt, thr=1):
         for j in range(len(mnlist)):
             PositionScore[(mnlist[i], mnlist[j])] = getMnScore(trps[i], trps[j])
 
-    #print(PositionScore)
     return PositionScore, GetCenVec(mnlist, trp_cnt)
 
 
@@ -208,7 +202,6 @@ def SplitAllMn(trp_cnt, db_cnt, thr=1):
                     if ((j < i and Trp[bst[0]][bst[1]] < 8 * Trp[scb[0]][scb[1]]) or
                         (i < j and Trp[bst[0]][bst[1]] * 8 > Trp[scb[0]][scb[1]])):
                         if bst[0] == scb[0] or bst[1] == scb[1]:
-                            print("DEPEND", mn, mnlist[bst[0]], mnlist[bst[1]], mnlist[scb[0]], mnlist[scb[1]])
                             isIndependent = False
 
             if isIndependent:

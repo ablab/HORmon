@@ -15,6 +15,10 @@ import HORmon_pipeline.RenameMonomers as rename
 import HORmon_pipeline.MonoRun as monorun
 import HORmon_pipeline.BuildSimpleGraph as smpGr
 import HORmon_pipeline.TriplesMatrix as tm
+import HORmon_pipeline.logger as logger
+import hormon_extract_hors
+import build_horconsensus
+import convert2bed
 
 def parse_args():
     parser = argparse.ArgumentParser(description="HORmon: updating monomers to make it consistent with CE postulate, and canonical HOR inferencing")
@@ -38,6 +42,7 @@ def parse_args():
                         help="minimum HOR(or monocycle) occurance",
                         type=int, default=10)
     parser.add_argument("--original_mn", dest = "IAmn", help="path to original monomer only for comparing", default="")
+    parser.add_argument("--monorun", dest="monorun", help="build and show monorun graphs", action="store_true")
     parser.add_argument("-t", dest="threads", help="number of threads(default=1)", default=1, type=int)
     parser.add_argument("-o", dest = "outdir", help="path to output directore", required=True)
 
@@ -61,14 +66,23 @@ def getMonomerGraphEdgeThr(sdout, args):
     return minW
 
 def main():
+    log = logger.HORmonLogger()
     args = parse_args()
     args.outdir = os.path.realpath(args.outdir)
+
+    if (not os.path.exists(args.outdir)):
+        os.makedirs(args.outdir)
+
+    log.set_up_file_handler(args.outdir)
+    log.start()
+
     args.mon = os.path.realpath(args.mon)
     args.seq = os.path.realpath(args.seq)
 
     if args.IAmn != "":
         args.IAmn = os.path.realpath(args.IAmn)
 
+    log.info("=== Extract Valuable Monomers STAGE ===")
     valMon, valMonPath = getValuableMonomers(args)
     valMonDir = os.path.dirname(valMonPath)
 
@@ -85,32 +99,40 @@ def main():
     if (not os.path.exists(mergeSplDir)):
         os.makedirs(mergeSplDir)
 
-    mon, mon_path = MergeSplit.MergeSplitMonomers(valMonPath, args.seq, mergeSplDir, args.threads, args.cenid)
+    log.info("=== Merge and Split Monomers STAGE ===")
+    mon, mon_path = MergeSplit.MergeSplitMonomers(valMonPath, args.seq, mergeSplDir, args.threads, args.cenid, log)
 
+    log.info("=== Build MonomerGraph for Valuable monomers STAGE ===")
     MonDir = os.path.dirname(mon_path)
     sdout = os.path.join(MonDir, "i0", "InitSD", "final_decomposition.tsv")
     dmg.BuildAndDrawMonomerGraph(valMon, sdout, valMonDir, nodeThr=args.vertThr,
                                  edgeThr=getMonomerGraphEdgeThr(sdout, args))
 
+    log.info("=== Build MonomerGRaph for initial monomers STAGE ===")
     sdout =  os.path.join(MonDir, "fdec.tsv")
     G = dmg.BuildAndDrawMonomerGraph(mon_path, sdout, MonDir,
                                      nodeThr=args.vertThr,
                                      edgeThr=getMonomerGraphEdgeThr(sdout, args), IAmn=args.IAmn)
 
+
+    log.info("=== Build Simplified MonomerGraph STAGE ===")
     SG = smpGr.BuildSimpleGraph({}, args.seq, sdout, mon_path, edgeThr=getMonomerGraphEdgeThr(sdout, args), IAmn=args.IAmn)
     dmg.DrawMonomerGraph(SG, MonDir, "simpl_graph")
 
-    mnrundir = os.path.join(args.outdir, "MonoRunRaw")
-    if not os.path.exists(mnrundir):
-        os.makedirs(mnrundir)
+    if args.monorun:
+        mnrundir = os.path.join(args.outdir, "MonoRunRaw")
+        if not os.path.exists(mnrundir):
+            os.makedirs(mnrundir)
 
-    fdec=os.path.join(MonDir, "fdec.tsv")
-    monorun.BuildAndShowMonorunGraph(fdec, mnrundir, vLim=args.vertThr,  eLim=getMonomerGraphEdgeThr(fdec, args))
+        fdec=os.path.join(MonDir, "fdec.tsv")
+        monorun.BuildAndShowMonorunGraph(fdec, mnrundir, vLim=args.vertThr,  eLim=getMonomerGraphEdgeThr(fdec, args))
 
+    log.info("=== Detect Hybrids STAGE ===")
     fdec = os.path.join(MonDir, "fdec.tsv")
-    hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, fdec, getMonomerGraphEdgeThr(fdec, args))
-    print("Hybrid: ", hybridSet)
-    eDir = elCycl.ElCycleSplit(mon_path, args.seq, fdec, args.outdir, G, hybridSet, args.threads)
+    hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, fdec, getMonomerGraphEdgeThr(fdec, args), log)
+
+    log.info("\n=== Split by Eulerian Cycle STAGE ===")
+    eDir = elCycl.ElCycleSplit(mon_path, args.seq, fdec, args.outdir, G, hybridSet, args.threads, log)
     if eDir is not None:
         mon_path = os.path.join(eDir, "mn.fa")
         fdec = os.path.join(eDir, "final_decomposition.tsv")
@@ -125,8 +147,10 @@ def main():
         SG = smpGr.BuildSimpleGraph({}, args.seq, fdec, mon_path, edgeThr=getMonomerGraphEdgeThr(fdec, args), IAmn=args.IAmn)
         dmg.DrawMonomerGraph(SG, os.path.join(args.outdir, "finalMnUpdate"), "simpl_graph")
 
+    log.info("\n=== Detect HORs STAGE ===")
     SG = smpGr.BuildSimpleGraph(hybridSet, args.seq, fdec, mon_path, edgeThr=getMonomerGraphEdgeThr(fdec, args))
     HORs = DetectHOR.detectHORs(mon_path, fdec, args.outdir, SG, hybridSet, args.minTraversals)
+
     if args.IAmn != "":
         finalOriginalDir = os.path.join(args.outdir, "finalOriginal")
         if not os.path.exists(finalOriginalDir):
@@ -146,13 +170,29 @@ def main():
                                      edgeThr=getMonomerGraphEdgeThr(fdec, args))
 
     HORs = rename.updateHORs(HORs, newNames)
-    DetectHOR.saveHOR(HORs, args.outdir)
+    horfile = DetectHOR.saveHOR(HORs, args.outdir)
 
-    mnrundir = os.path.join(args.outdir, "MonoRun")
-    if not os.path.exists(mnrundir):
-        os.makedirs(mnrundir)
-    monorun.BuildAndShowMonorunGraph(fdec, mnrundir, vLim=args.vertThr, eLim=getMonomerGraphEdgeThr(fdec, args))
+    if args.monorun:
+        log.info("\n=== Build Monorun graphs STAGE ===")
+        mnrundir = os.path.join(args.outdir, "MonoRun")
+        if not os.path.exists(mnrundir):
+            os.makedirs(mnrundir)
+        monorun.BuildAndShowMonorunGraph(fdec, mnrundir, vLim=args.vertThr, eLim=getMonomerGraphEdgeThr(fdec, args))
 
+    log.info("\n=== HOR decomposition STAGE ===")
+    hordecfile = os.path.join(args.outdir, "HORdecomposition.tsv")
+    hormon_extract_hors.HORdecomposition(fdec, horfile, hordecfile)
+
+    log.info("\n=== Build HORs consensus STAGE ===")
+    bedfile = convert2bed.conver2bed(fdec)
+    build_horconsensus.build_horcons(args.seq, bedfile, os.path.join(args.outdir, "HOR_consensus"), horfile, log=log)
+
+    log.info("\nRESULTS:")
+    log.info("Final monomers: " + mon_path, indent=1)
+    log.info("Monomers decompostion: " + fdec, indent=1)
+    log.info("HOR descriptions: " + horfile, indent=1)
+    log.info("HORs decomposition: " + hordecfile, indent=1)
+    log.finish()
 
 if __name__ == "__main__":
     main()

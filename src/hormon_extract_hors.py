@@ -174,24 +174,30 @@ def collapse_hordec(hordec, mono_mp, hors):
         hordec_c[-1][1] += "<sup>" + str(cnt) + "</sup>"
     return hordec_c
 
-def main():
-    args = parse_args()
-    monodec, monomers = load_monodec(args.monodecfile)
-    hors, mono_mp = load_horascycle(args.horsfile)
-    outfilename = args.outfilename
+
+def HORdecomposition(monodecfile, horsfile, outfile):
+    monodec, monomers = load_monodec(monodecfile)
+    hors, mono_mp = load_horascycle(horsfile)
+    outfilename = outfile
     hordec = decompose(monodec, hors)
 
     with open(outfilename, "w") as fout:
         for i in range(len(hordec)):
-           if float(hordec[i][4]) > MONOIDNT:
-               fout.write("\t".join(hordec[i][:-1]) + "\n")
+            if float(hordec[i][4]) > MONOIDNT:
+                fout.write("\t".join(hordec[i][:-1]) + "\n")
     print("HOR decomposition saved to", outfilename)
 
     hordec_c = collapse_hordec(hordec, mono_mp, hors)
-    with open(outfilename[:-len(".tsv")]+"_collapsed.tsv", "w") as fout:
+    with open(outfilename[:-len(".tsv")] + "_collapsed.tsv", "w") as fout:
         for i in range(len(hordec_c)):
-           fout.write("\t".join(hordec_c[i]).replace("{","").replace("}", "") + "\n")
-    print("Collapsed HOR decomposition saved to", outfilename[:-len(".tsv")]+"_collapsed.tsv")
+            fout.write("\t".join(hordec_c[i]).replace("{", "").replace("}", "") + "\n")
+    print("Collapsed HOR decomposition saved to", outfilename[:-len(".tsv")] + "_collapsed.tsv")
+
+
+def main():
+    args = parse_args()
+    HORdecomposition(args.monodecfile, args.horsfile, args.outfilename)
+
 
 if __name__ == "__main__":
     main()

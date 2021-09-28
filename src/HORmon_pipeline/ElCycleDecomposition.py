@@ -54,7 +54,6 @@ def get_blocks(trpl, path_seq, tsv_res):
         seqs_dict[record.id] = str(record.seq).upper()
 
     df_sd = pd.read_csv(tsv_res, sep = "\t")
-    print(df_sd.head())
     for i in range(1, len(df_sd) - 1):
         if df_sd.iloc[i,4] > 60:
             if df_sd.iloc[i, 1].rstrip("'") == trpl[1]:
@@ -86,23 +85,7 @@ def SplitMonomers(MnToSplit, mnpath,  sdtsv, path_seq, outd):
     utils.savemn(os.path.join(outd, "mn.fa"), mnlist)
 
 
-def ElCycleSplit(mn_path, seq_path, sd_tsv, outd, G, hybridSet, threads):
-    #cycles = DetectHOR.genAllCycles(G)
-    #mns_prm = [v for v in G.nodes() if v not in hybridSet]
-    #cl_all = []
-    #for cl in cycles:
-    #    usedV = set([v for v in cl if v not in hybridSet])
-    #    if usedV == set(mns_prm):
-    #        cl_all = cl
-    #        break
-
-    #if len(cl_all) == 0:
-    #    return None
-
-    #cl_all = cl_all[:-1]
-    #if len(cl_all) == len(set(cl_all)):
-    #    return None
-
+def ElCycleSplit(mn_path, seq_path, sd_tsv, outd, G, hybridSet, threads, log):
     G = simpleGr.BuildSimpleGraph(hybridSet, seq_path, sd_tsv, mn_path)
     mncnt = tm.calc_mn_order_stat(sd_tsv, maxk=2)[0]
 
@@ -125,9 +108,11 @@ def ElCycleSplit(mn_path, seq_path, sd_tsv, outd, G, hybridSet, threads):
             if ndCnt[x] > 1:
                 spltNode[x].append((elrCirc[i - 1][0], elrCirc[i][1]))
 
-        print("Split Node: ", spltNode)
+        log.info("NODEs to split: " + str(spltNode), indent=1)
         SplitMonomers(spltNode, mn_path, sd_tsv, seq_path, outElC)
         tsv_res = run_SD(os.path.join(outElC, "mn.fa"), seq_path, outElC, threads)
         return outElC
+    else:
+        log.info("No node to split", indent=1)
 
     return None
