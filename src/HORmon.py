@@ -2,7 +2,7 @@
 
 import os
 import argparse
-from shutil import copy
+from shutil import copyfile
 
 import HORmon_pipeline.utils as utils
 import HORmon_pipeline.ExtractValuableMonomers as ValMon
@@ -155,7 +155,7 @@ def main():
         finalOriginalDir = os.path.join(args.outdir, "finalOriginal")
         if not os.path.exists(finalOriginalDir):
             os.makedirs(finalOriginalDir)
-        copy(mon_path, finalOriginalDir)
+        copyfile(mon_path, os.path.join(finalOriginalDir, "mn.fa"))
         fdec = utils.run_SD(mon_path, args.seq, finalOriginalDir, args.threads)
         G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, finalOriginalDir,
                                      nodeThr=args.vertThr,
