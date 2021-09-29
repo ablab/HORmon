@@ -720,7 +720,7 @@ def final_iteration(args, sd_script_path, monomers_list):
     shutil.copyfile(args.monomers, local_monmers_path)
 
     # run string decomposer
-    sys_call(["python3", sd_script_path, args.sequences, local_monmers_path, "-t", str(args.threads), "--fast", "--ed_thr", "20"])
+    sys_call([sd_script_path, args.sequences, local_monmers_path, "-t", str(args.threads), "--ed_thr", "20"])
     log.log("String decomposer is complete. Results save in: " + iter_outdir)
 
     # parse output csv file
@@ -819,7 +819,7 @@ def main():
     current_script_path = os.path.abspath(os.path.dirname(__file__))
 
     # path to the run_decomposer script
-    sd_script_path = os.path.join(current_script_path, "..", "stringdecomposer", "sd", "run_decomposer.py")
+    sd_script_path = "stringdecomposer"
     log.log("Path to run_decomposer: " + sd_script_path)
 
     # create output_dir if not exists
@@ -854,7 +854,7 @@ def main():
                         f.write(u_mn + "\n")
                 extra_options = ["--new-monomers", upmn_path]
             # run string decomposer
-            sys_call(["python3", sd_script_path, args.sequences, local_monmers_path, "-t", str(args.threads), "--fast"])
+            sys_call([sd_script_path, args.sequences, local_monmers_path, "-t", str(args.threads)])
             log.log("String decomposer is complete. Results save in: " + iter_outdir)
 
         # parse output csv file

@@ -34,7 +34,7 @@ Then, HORmon is available as `monomer_inference` and `HORmon`
 Monomer Inference script needs two parameters: (1) (centromeric) sequence and (2) monomer template:
 
 ```
-python3 src/monomer_inference.py -seq test_data/cenXtoy.fasta -mon test_data/AlphaSat.fa
+python3 src/monomer_inference.py -seq test_data/cen8toy.fa -mon test_data/AlphaSat.fa
 ```
 
 Resulting monomers can be found in ```final/monomers.fa``` and sequence annotation in ```final/final_decomposition.tsv```.
