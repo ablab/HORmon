@@ -8,6 +8,7 @@ import os
 from os import listdir
 from os.path import isfile, isdir, join
 import argparse
+import copy
 
 MONOIDNT = 95
 
@@ -22,6 +23,7 @@ def parse_args():
 def load_monodec(filename):
     dec = []
     monomers = set()
+    rc_num = 0
     with open(filename, "r") as fin:
         for ln in fin.readlines():
            if len(ln.strip().split("\t")) < 5:
@@ -30,7 +32,13 @@ def load_monodec(filename):
            if float(idnt) > MONOIDNT:
                dec.append([ref, mon, start, end, idnt])
                monomers.add(mon)
-    return dec, monomers
+               if mon.endswith("'"):
+                   rc_num += 1
+    if rc_num > 0.5*len(dec):
+         revert = True
+    else:
+         revert = False
+    return dec, monomers, revert
 
 def shift(hor_lst):
     min_ind = 0
@@ -149,7 +157,16 @@ def collapse_name(mono_seq, mono_mp, hor):
             e = "-" + res.split("-")[-1]
         return "p<sub>" + s + "-" + e + "</sub>"
 
-def collapse_hordec(hordec, mono_mp, hors):
+def revert_hor(mon_seq):
+    res = []
+    for m in mon_seq.split(","):
+      if m.endswith("'"):
+        res.append(m[:-1])
+      else:
+        res.append(m+"'")
+    return ",".join(res[::-1])
+
+def collapse_hordec(hordec, mono_mp, hors, revert):
     hordec_c = [hordec[0]]
     cnt, idnt = 1, float(hordec[0][4])
     for i in range(1, len(hordec)):
@@ -160,7 +177,10 @@ def collapse_hordec(hordec, mono_mp, hors):
         else:
            cur_hor_name = hordec_c[-1][5]
            mon_seq = hordec_c[-1][1]
-           hordec_c[-1][1] = collapse_name(mon_seq, mono_mp, hors[cur_hor_name])
+           if not revert:
+               hordec_c[-1][1] = collapse_name(mon_seq, mono_mp, hors[cur_hor_name])
+           else:
+               hordec_c[-1][1] = collapse_name(revert_hor(mon_seq), mono_mp, hors[cur_hor_name]) + "'"
            if cnt > 1:
                hordec_c[-1][1] += "<sup>" + str(cnt) + "</sup>"
            hordec_c[-1][4] = "{:.2f}".format(idnt/cnt)
@@ -169,14 +189,17 @@ def collapse_hordec(hordec, mono_mp, hors):
     hordec_c[-1][4] = "{:.2f}".format(idnt/cnt)
     cur_hor_name = hordec_c[-1][5]
     mon_seq = hordec_c[-1][1]
-    hordec_c[-1][1] = collapse_name(mon_seq, mono_mp, hors[cur_hor_name])
+    if not revert:
+        hordec_c[-1][1] = collapse_name(mon_seq, mono_mp, hors[cur_hor_name])
+    else:
+        hordec_c[-1][1] = collapse_name(revert_hor(mon_seq), mono_mp, hors[cur_hor_name]) + "'"
     if cnt > 1:
         hordec_c[-1][1] += "<sup>" + str(cnt) + "</sup>"
     return hordec_c
 
 
 def HORdecomposition(monodecfile, horsfile, outfile):
-    monodec, monomers = load_monodec(monodecfile)
+    monodec, monomers, revert = load_monodec(monodecfile)
     hors, mono_mp = load_horascycle(horsfile)
     outfilename = outfile
     hordec = decompose(monodec, hors)
@@ -187,12 +210,17 @@ def HORdecomposition(monodecfile, horsfile, outfile):
                 fout.write("\t".join(hordec[i][:-1]) + "\n")
     print("HOR decomposition saved to", outfilename)
 
-    hordec_c = collapse_hordec(hordec, mono_mp, hors)
-    with open(outfilename[:-len(".tsv")] + "_collapsed.tsv", "w") as fout:
+    hordec_c = collapse_hordec(copy.deepcopy(hordec), mono_mp, hors, False)
+    with open(outfilename[:-len(".tsv")]+"_collapsed.tsv", "w") as fout:
         for i in range(len(hordec_c)):
-            fout.write("\t".join(hordec_c[i]).replace("{", "").replace("}", "") + "\n")
-    print("Collapsed HOR decomposition saved to", outfilename[:-len(".tsv")] + "_collapsed.tsv")
+           fout.write("\t".join(hordec_c[i]).replace("{","").replace("}", "") + "\n")
+    print("Collapsed HOR decomposition saved to", outfilename[:-len(".tsv")]+"_collapsed.tsv")
 
+    hordec_c = collapse_hordec(hordec, mono_mp, hors, revert)
+    with open(outfilename[:-len(".tsv")]+"_reverted_collapsed.tsv", "w") as fout:
+        for i in range(len(hordec_c)):
+           fout.write("\t".join(hordec_c[i]).replace("{","").replace("}", "") + "\n")
+    print("Collapsed HOR decomposition saved to", outfilename[:-len(".tsv")]+"_reverted_collapsed.tsv")
 
 def main():
     args = parse_args()
