@@ -9,6 +9,7 @@ from os import listdir
 from os.path import isfile, isdir, join
 import argparse
 import copy
+from pathlib import Path
 
 MONOIDNT = 95
 
@@ -119,7 +120,7 @@ def decompose(monodec, hors, rev=False):
     hordec.append([cur_hor[0][0], ",".join([x[1] for x in cur_hor]), cur_hor[0][2], cur_hor[-1][3], "{:.2f}".format(idnt), cur_hor_name] )
     return hordec
 
-def collapse_name(mono_seq, mono_mp, hor):
+def collapse_hor_name(mono_seq, mono_mp, hor):
     mono_lst = mono_seq.split(",")
     if len(mono_lst) == 1:
        return mono_lst[0]
@@ -166,6 +167,12 @@ def revert_hor(mon_seq):
         res.append(m+"'")
     return ",".join(res[::-1])
 
+def collapse_hor(mono_seq, mono_mp, hor, revert):
+    if revert:
+      return collapse_hor_name(revert_hor(mono_seq), mono_mp, hor) + "'"
+    else:
+      return collapse_hor_name(mono_seq, mono_mp, hor)
+
 def collapse_hordec(hordec, mono_mp, hors, revert):
     hordec_c = [hordec[0]]
     cnt, idnt = 1, float(hordec[0][4])
@@ -176,11 +183,7 @@ def collapse_hordec(hordec, mono_mp, hors, revert):
            hordec_c[-1][3] = hordec[i][3]
         else:
            cur_hor_name = hordec_c[-1][5]
-           mon_seq = hordec_c[-1][1]
-           if not revert:
-               hordec_c[-1][1] = collapse_name(mon_seq, mono_mp, hors[cur_hor_name])
-           else:
-               hordec_c[-1][1] = collapse_name(revert_hor(mon_seq), mono_mp, hors[cur_hor_name]) + "'"
+           hordec_c[-1][1] = collapse_hor(hordec_c[-1][1], mono_mp, hors[cur_hor_name], revert)
            if cnt > 1:
                hordec_c[-1][1] += "<sup>" + str(cnt) + "</sup>"
            hordec_c[-1][4] = "{:.2f}".format(idnt/cnt)
@@ -188,11 +191,7 @@ def collapse_hordec(hordec, mono_mp, hors, revert):
            hordec_c.append(hordec[i])
     hordec_c[-1][4] = "{:.2f}".format(idnt/cnt)
     cur_hor_name = hordec_c[-1][5]
-    mon_seq = hordec_c[-1][1]
-    if not revert:
-        hordec_c[-1][1] = collapse_name(mon_seq, mono_mp, hors[cur_hor_name])
-    else:
-        hordec_c[-1][1] = collapse_name(revert_hor(mon_seq), mono_mp, hors[cur_hor_name]) + "'"
+    hordec_c[-1][1] = collapse_hor(hordec_c[-1][1], mono_mp, hors[cur_hor_name], revert)
     if cnt > 1:
         hordec_c[-1][1] += "<sup>" + str(cnt) + "</sup>"
     return hordec_c
@@ -201,7 +200,7 @@ def collapse_hordec(hordec, mono_mp, hors, revert):
 def HORdecomposition(monodecfile, horsfile, outfile):
     monodec, monomers, revert = load_monodec(monodecfile)
     hors, mono_mp = load_horascycle(horsfile)
-    outfilename = outfile
+    outfilename = Path(outfile)
     hordec = decompose(monodec, hors)
 
     with open(outfilename, "w") as fout:
@@ -210,17 +209,21 @@ def HORdecomposition(monodecfile, horsfile, outfile):
                 fout.write("\t".join(hordec[i][:-1]) + "\n")
     print("HOR decomposition saved to", outfilename)
 
-    hordec_c = collapse_hordec(copy.deepcopy(hordec), mono_mp, hors, False)
-    with open(outfilename[:-len(".tsv")]+"_collapsed.tsv", "w") as fout:
+    hordec_c = collapse_hordec(copy.deepcopy(hordec), mono_mp, hors, revert = False)
+    outfilename_collapsedhors = outfilename.with_suffix(".collapsed.tsv")
+    with open(outfilename_collapsedhors, "w") as fout:
         for i in range(len(hordec_c)):
-           fout.write("\t".join(hordec_c[i]).replace("{","").replace("}", "") + "\n")
-    print("Collapsed HOR decomposition saved to", outfilename[:-len(".tsv")]+"_collapsed.tsv")
+           fout.write("\t".join(hordec_c[i]) + "\n")
+    print("Collapsed HOR decomposition saved to", outfilename_collapsedhors)
 
-    hordec_c = collapse_hordec(hordec, mono_mp, hors, revert)
-    with open(outfilename[:-len(".tsv")]+"_reverted_collapsed.tsv", "w") as fout:
+    hordec_rc = hordec_c
+    if revert:
+      hordec_rc = collapse_hordec(hordec, mono_mp, hors, revert)
+    outfilename_rcollapsedhors = outfilename.with_suffix(".reverted.collapsed.tsv")
+    with open(outfilename_rcollapsedhors, "w") as fout:
         for i in range(len(hordec_c)):
-           fout.write("\t".join(hordec_c[i]).replace("{","").replace("}", "") + "\n")
-    print("Collapsed HOR decomposition saved to", outfilename[:-len(".tsv")]+"_reverted_collapsed.tsv")
+           fout.write("\t".join(hordec_c[i]) + "\n")
+    print("Collapsed HOR decomposition saved to", outfilename_rcollapsedhors)
 
 def main():
     args = parse_args()
