@@ -17,7 +17,7 @@ Requirements:
 
 The required python packages can be installed through conda using
 ```
-conda install --file requirement.txt
+conda install --file requirements.txt
 ```
 
 Installing from source
