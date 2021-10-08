@@ -24,10 +24,15 @@ Installing from source
 ```
 git clone https://github.com/ablab/centromere-architect.git
 cd centromere-architect
-python3 setup.py install
+python3 setup.py install --record hormon_files.txt
 ```
 
-Then, HORmon is available as `monomer_inference` and `HORmon` 
+Then, HORmon is available as `monomer_inference` and `HORmon`
+
+Afterward, to uninstall HORmon please run
+```
+xargs rm -rf < hormon_files.txt
+```
 
 ## Quick start
 ### Monomer Inference
