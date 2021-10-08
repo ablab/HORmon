@@ -56,7 +56,16 @@ Output:
 * `toy8/HORs.tsv` -- HORs description
 * `toy8/HORdecomposition.tsv` -- HORs decomposition
 
+## CentromereArchitect 
+
+CentromereArchitect, as it is described in the paper, is available at the branch [centromere-architect](https://github.com/ablab/centromere-architect/tree/centromere-architect).
+Please cite [Dvorkina et al., 2021](https://academic.oup.com/bioinformatics/article/37/Supplement_1/i196/6319687).
+
 ## Feedback and bug reports
 Your comments, bug reports, anf suggestions are very welcomed. They will help up to further improve HORmon. 
 
-You can leave your comments and bug reports at [our GitHub repository tracker](https://github.com/ablab/centromere-architect/issues). 
+You can leave your comments and bug reports at [our GitHub repository tracker](https://github.com/ablab/centromere-architect/issues).
+
+# Cite
+
+- [Dvorkina, T., Kunyavskaya, O., Bzikadze, A. V., Alexandrov, I., & Pevzner, P. A. (2021). CentromereArchitect: inference and analysis of the architecture of centromeres. Bioinformatics, 37(Supplement_1), i196-i204.](https://academic.oup.com/bioinformatics/article/37/Supplement_1/i196/6319687)
