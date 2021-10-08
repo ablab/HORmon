@@ -9,14 +9,14 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
 
-import HORmon_pipeline.utils as utils
-from HORmon_pipeline.utils import rc
-from HORmon_pipeline.utils import unique
-from HORmon_pipeline.utils import load_fasta
-from HORmon_pipeline.utils import run_SD
-from HORmon_pipeline.utils import save_seqs
-from HORmon_pipeline.utils import get_consensus_seq
-import HORmon_pipeline.TriplesMatrix as TriplesMatrix
+import HORmon.HORmon_pipeline.utils as utils
+from HORmon.HORmon_pipeline.utils import rc
+from HORmon.HORmon_pipeline.utils import unique
+from HORmon.HORmon_pipeline.utils import load_fasta
+from HORmon.HORmon_pipeline.utils import run_SD
+from HORmon.HORmon_pipeline.utils import save_seqs
+from HORmon.HORmon_pipeline.utils import get_consensus_seq
+import HORmon.HORmon_pipeline.TriplesMatrix as TriplesMatrix
 
 
 def getMnSim(mon):

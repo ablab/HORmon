@@ -2,7 +2,9 @@
 
 import os
 import csv
-import HORmon_pipeline.utils as utils
+
+import HORmon.HORmon_pipeline.utils as utils
+
 
 def genCycleInner(G, prefixCycle, usedEdges, cycleList):
     def samecc(c1, c2):

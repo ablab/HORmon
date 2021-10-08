@@ -7,11 +7,11 @@ from subprocess import check_call
 import math
 import os
 import pandas as pd
-import HORmon_pipeline.utils as utils
+import HORmon.HORmon_pipeline.utils as utils
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
-import HORmon_pipeline.TriplesMatrix as tm
+import HORmon.HORmon_pipeline.TriplesMatrix as tm
 
 def GetMaxMatching(kcnt):
     mn_set = {tuple(list(x)[:-1]) for x in kcnt.keys()} | {tuple(list(x)[1:]) for x in kcnt.keys()}

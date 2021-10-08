@@ -2,23 +2,27 @@
 
 import os
 import argparse
-from shutil import copyfile
+from shutil import copy
+import sys
+from os.path import dirname, abspath
 
-import HORmon_pipeline.utils as utils
-import HORmon_pipeline.ExtractValuableMonomers as ValMon
-import HORmon_pipeline.MergeAndSplitMonomers as MergeSplit
-import HORmon_pipeline.DrawMonomerGraph as dmg
-import HORmon_pipeline.DetectHOR as DetectHOR
-import HORmon_pipeline.Hybrid as hybrid
-import HORmon_pipeline.ElCycleDecomposition as elCycl
-import HORmon_pipeline.RenameMonomers as rename
-import HORmon_pipeline.MonoRun as monorun
-import HORmon_pipeline.BuildSimpleGraph as smpGr
-import HORmon_pipeline.TriplesMatrix as tm
-import HORmon_pipeline.logger as logger
-import hormon_extract_hors
-import build_horconsensus
-import convert2bed
+sys.path.insert(0, dirname(dirname(abspath(__file__))))
+
+import HORmon.HORmon_pipeline.utils as utils
+import HORmon.HORmon_pipeline.ExtractValuableMonomers as ValMon
+import HORmon.HORmon_pipeline.MergeAndSplitMonomers as MergeSplit
+import HORmon.HORmon_pipeline.DrawMonomerGraph as dmg
+import HORmon.HORmon_pipeline.DetectHOR as DetectHOR
+import HORmon.HORmon_pipeline.Hybrid as hybrid
+import HORmon.HORmon_pipeline.ElCycleDecomposition as elCycl
+import HORmon.HORmon_pipeline.RenameMonomers as rename
+import HORmon.HORmon_pipeline.MonoRun as monorun
+import HORmon.HORmon_pipeline.BuildSimpleGraph as smpGr
+import HORmon.HORmon_pipeline.TriplesMatrix as tm
+import HORmon.HORmon_pipeline.logger as logger
+import HORmon.hormon_extract_hors as hormon_extract_hors
+import HORmon.build_horconsensus as build_horconsensus
+import HORmon.convert2bed as convert2bed
 
 def parse_args():
     parser = argparse.ArgumentParser(description="HORmon: updating monomers to make it consistent with CE postulate, and canonical HOR inferencing")

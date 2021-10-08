@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import HORmon_pipeline.utils as utils
-import HORmon_pipeline.TriplesMatrix as TriplesMatrix
+import HORmon.HORmon_pipeline.utils as utils
+import HORmon.HORmon_pipeline.TriplesMatrix as TriplesMatrix
 
 def get_hybrid_len(main_mn, mn1, mn2):
     resDiv = 500
