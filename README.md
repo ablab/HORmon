@@ -1,10 +1,11 @@
 # HORmon
 HORmon is a tool for annotation of alpha satellite arrays in centromeres of a newly assembled human genome. HORmon consists of two modules:
-* **Monomer Inference** extract draft human monomers based on the given alpha-satellite consensus template and centromeric sequence.
+* **Monomer Inference** extracts draft human monomers based on the given alpha-satellite consensus template and centromeric sequence.
 * **HORmon** polishes monomers extracted on the previous stage to make it consistent with Centromere Evolution postulate, extract HORs and decompose centromeric sequence into HORs.
 
 ## Installation
 Requirements:
+* Linux only. Mac OS is not yet supported
 * Python3.6+
   * biopython
   * clustalo
@@ -62,7 +63,7 @@ CentromereArchitect, as it is described in the paper, is available at the branch
 Please cite [Dvorkina et al., 2021](https://academic.oup.com/bioinformatics/article/37/Supplement_1/i196/6319687).
 
 ## Feedback and bug reports
-Your comments, bug reports, anf suggestions are very welcomed. They will help up to further improve HORmon. 
+Your comments, bug reports, and suggestions are very welcomed. They will help up to further improve HORmon. 
 
 You can leave your comments and bug reports at [our GitHub repository tracker](https://github.com/ablab/centromere-architect/issues).
 
