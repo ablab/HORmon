@@ -2,7 +2,7 @@
 
 import os
 import argparse
-from shutil import copy
+from shutil import copyfile
 import sys
 from os.path import dirname, abspath
 
