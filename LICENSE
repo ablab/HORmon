@@ -1,11 +1,11 @@
-CentromereArchitect
+HORmon
 Copyright (c) 2021 Saint Petersburg State University
 
-StringDecomposer is free software; you can redistribute it and/or modify
+HORmon is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License, Version 2,
 dated June 1991, as published by the Free Software Foundation.
 
-StringDecomposer is distributed in the hope that it will be useful, but
+HORmon is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 General Public License for more details.
@@ -17,14 +17,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 -------------------------------------------------------------------------------
 
-Third-party tools used into StringDecomposer:
+Third-party tools used into HORmon:
 
-1. CentromereArchitect uses StringDecomposer to annotate centromeric sequences on each clustering stage.
+1. HORmon uses StringDecomposer to annotate centromeric sequences on each clustering stage.
 
 For more details please see:
 https://github.com/ablab/stringdecomposer
 
-2. CentromereArchitect uses edlib library to calculate monomer alignment identities.
+2. HORmon uses edlib library to calculate monomer alignment identities.
 
 For more details about edlib library please refer to
 https://github.com/Martinsos/edlib and to the following paper:
@@ -32,7 +32,7 @@ https://github.com/Martinsos/edlib and to the following paper:
 Martin Šošić, Mile Šikić; Edlib: a C/C ++ library for fast, exact sequence alignment using edit distance. 
 Bioinformatics 2017 btw753. doi: 10.1093/bioinformatics/btw753
 
-3. CentromereArchitect uses Clustal Omega to calculate monomer consensus on each clustering stage.
+3. HORmon uses Clustal Omega to calculate monomer consensus on each clustering stage.
 
 For more details please refere to 
 Sievers F, Wilm A, Dineen DG, Gibson TJ, Karplus K, Li W, Lopez R, McWilliam H, Remmert M, Söding J, Thompson JD, Higgins DG (2011). 
