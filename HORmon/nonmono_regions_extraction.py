@@ -1,3 +1,9 @@
+############################################################################
+# Copyright (c) 2021 Saint Petersburg State University
+# Part of HORmon package. All Rights Reserved
+# See file LICENSE for details.
+############################################################################
+
 import sys
 import edlib
 
@@ -70,7 +76,7 @@ def load_fasta(filename, tp = "list"):
     if tp == "map":
         records = SeqIO.to_dict(SeqIO.parse(filename, "fasta"))
         for r in records:
-            records[r] = records[r].upper() 
+            records[r] = records[r].upper()
     else:
         records = list(SeqIO.parse(filename, "fasta"))
         for i in range(len(records)):
@@ -204,7 +210,7 @@ def local_alignments(seq1, seq2, minlen = 20):
             if seq1[j - 1] == seq2[i - 1]:
                 dp[i][j] = max(dp[i][j], dp[i-1][j-1] + match)
                 if dp[i][j] == dp[i-1][j-1] + match:
-                    aln_len[i][j] = aln_len[i-1][j-1] + 1 
+                    aln_len[i][j] = aln_len[i-1][j-1] + 1
             else:
                 dp[i][j] = max(dp[i][j], dp[i-1][j-1] + mismatch)
                 if dp[i][j] == dp[i-1][j-1] + mismatch:
@@ -217,7 +223,7 @@ def local_alignments(seq1, seq2, minlen = 20):
                 aln_len[i][j] = aln_len[i][j-1] + 1
             if dp[i][j] == 0:
                 aln_len[i][j] = 1
- 
+
     max_i, max_j = 0, 0
     for i in range(1, len(seq2) + 1):
         for j in range(1, len(seq1) + 1):
@@ -313,14 +319,14 @@ def prefix_alignment(seq1, seq2, dp):
                 dp[i][j] = dp[i-1][j-1] + mismatch
             if j < i - 1 + w:
                 dp[i][j] = min(dp[i][j], dp[i-1][j] + gap)
-            if j - 1 >= i - w:    
+            if j - 1 >= i - w:
                 dp[i][j] = min(dp[i][j], dp[i][j-1] + gap)
             if best_score > dp[i][j]:
                 best_score, best_j = dp[i][j], j
         best_scores.append([best_score, best_j-1])
     #aln = restore_aln2(dp, max_i, max_j, match, mismatch, gap, seq1, seq2)
     #print("".join(aln[0]))
-    #print("".join(aln[1]))    
+    #print("".join(aln[1]))
     return best_scores, dp
 
 
@@ -365,7 +371,7 @@ def cut_monomers(seqs, monomers, th_mono):
             print("".join(best_aln[1]))
             print("")
             print("".join(bbest_aln[0]))
-            print("".join(bbest_aln[1]))    
+            print("".join(bbest_aln[1]))
             print("")
             print(len(s["seq"]), len(seqs[i]["seq"]))
             if (171 - best_ed)/171*100 > th_mono:

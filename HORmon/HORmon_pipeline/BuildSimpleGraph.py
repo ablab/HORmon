@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+############################################################################
+# Copyright (c) 2021 Saint Petersburg State University
+# Part of HORmon package. All Rights Reserved
+# See file LICENSE for details.
+############################################################################
+
 import networkx as nx
 from networkx.algorithms import bipartite
 from networkx.drawing.nx_agraph import write_dot

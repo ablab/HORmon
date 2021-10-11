@@ -1,3 +1,9 @@
+############################################################################
+# Copyright (c) 2021 Saint Petersburg State University
+# Part of HORmon package. All Rights Reserved
+# See file LICENSE for details.
+############################################################################
+
 from Bio.Seq import Seq
 from Bio import SeqIO
 from Bio import SearchIO
@@ -95,9 +101,9 @@ def decompose(monodec, hors, rev=False):
     for h in hors:
         if monodec[fp][1] in hors[h][0]:
             cur_hor_name = h
-    
+
     bgp, edp, stp = (1, len(monodec), 1) if not rev else (len(monodec) - 2, -1, -1)
-    
+
     for i in range(bgp, edp, stp):
         prev, cur = (cur_hor[-1][1], monodec[i][1]) if stp == 1 else (monodec[i][1], cur_hor[0][1])
         mndist = abs(int(cur_hor[-1][3]) - int(monodec[i][2])) if stp == 1 else abs(int(monodec[i][3]) - int(cur_hor[0][2]))
