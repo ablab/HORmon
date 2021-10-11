@@ -62,7 +62,7 @@ Output:
 * `toy8/HORdecomposition.tsv` -- HORs decomposition
 
 
-***Note***: *HORmon should be launch on each centromere independantly. This is the current limitation of HORmon, in the case of running HORmon on all centromeres simultaneously, we cannot guarantee adequate results.*
+***Note***: *HORmon should be launch on each centromere independently. We currently cannot guarante adequate results, in the case of running HORmon on all centromeres simultaneously.*
 
 ## CentromereArchitect 
 
