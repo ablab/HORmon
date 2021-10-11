@@ -61,6 +61,9 @@ Output:
 * `toy8/HORs.tsv` -- HORs description
 * `toy8/HORdecomposition.tsv` -- HORs decomposition
 
+
+***Note***: *HORmon should be launch on each centromere independantly. This is the current limitation of HORmon, in the case of running HORmon on all centromeres simultaneously, we cannot guarantee adequate results.*
+
 ## CentromereArchitect 
 
 CentromereArchitect (early version of HORmon), as it is described in the paper, is available at the branch [centromere-architect](https://github.com/ablab/centromere-architect/tree/centromere-architect).
