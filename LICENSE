@@ -17,7 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 -------------------------------------------------------------------------------
 
-Third-party tools used into StringDecomposer:
+Third-party tools used into HORmon:
 
 1. HORmon uses CentromereArchitect and StringDecomposer to annotate centromeric sequences on each clustering stage.
 
