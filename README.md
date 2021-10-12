@@ -12,6 +12,15 @@ The data includes extracted monomers and HORs from all live alpha satellite arra
 Jupyter notebook that reproduces figures of the HOR paper is available at [github](https://github.com/TanyaDvorkina/hormon_paper/blob/dev/HORmon_paper.ipynb).
 
 ## Installation
+
+The recommended way to install HORmon is with conda package manager:
+
+```
+conda install -c bioconda hormon 
+```
+
+Alternatively, HORmon can be build and installed from source as described below.
+
 Requirements:
 * Linux only. Mac OS is not yet supported
 * Python3.6+
