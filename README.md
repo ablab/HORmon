@@ -1,4 +1,7 @@
 # HORmon
+
+[![Anaconda-Server Badge](https://anaconda.org/bioconda/hormon/badges/installer/conda.svg)](https://conda.anaconda.org/bioconda)
+
 HORmon is a tool for annotation of alpha satellite arrays in centromeres of a newly assembled human genome. HORmon consists of two modules:
 * **Monomer Inference** extracts draft human monomers based on the given alpha-satellite consensus template and centromeric sequence.
 * **HORmon** polishes monomers extracted on the previous stage to make it consistent with Centromere Evolution postulate, extract HORs and decompose centromeric sequence into HORs.
