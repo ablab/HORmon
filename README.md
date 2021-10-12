@@ -40,8 +40,8 @@ conda install --file requirements.txt
 
 Installing from source
 ```
-git clone https://github.com/ablab/centromere-architect.git
-cd centromere-architect
+git clone https://github.com/ablab/HORmon.git
+cd HORmon
 python3 setup.py install --record hormon_files.txt
 ```
 
