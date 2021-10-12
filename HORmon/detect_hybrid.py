@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+############################################################################
+# Copyright (c) 2021 Saint Petersburg State University
+# Part of HORmon package. All Rights Reserved
+# See file LICENSE for details.
+############################################################################
+
 import os
 import sys
 import csv

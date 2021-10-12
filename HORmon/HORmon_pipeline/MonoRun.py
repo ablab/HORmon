@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+
+############################################################################
+# Copyright (c) 2021 Saint Petersburg State University
+# Part of HORmon package. All Rights Reserved
+# See file LICENSE for details.
+############################################################################
+
 import math
 
 import os
@@ -337,7 +344,7 @@ def BuildAndShowMonorunGraph(tsv_res, outdir, vLim=100, eLim = 100):
         if len(vr) > 1:
             vr = f'({vr})'
         return vr
-        
+
     open(os.path.join(outdir, "L.csv"), "w").close()
 
     epaths = {}

@@ -1,3 +1,9 @@
+############################################################################
+# Copyright (c) 2021 Saint Petersburg State University
+# Part of HORmon package. All Rights Reserved
+# See file LICENSE for details.
+############################################################################
+
 from Bio.Seq import Seq
 from Bio import SeqIO
 from Bio import SearchIO

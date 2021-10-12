@@ -19,9 +19,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 Third-party tools used into HORmon:
 
-1. HORmon uses StringDecomposer to annotate centromeric sequences on each clustering stage.
+1. HORmon uses CentromereArchitect and StringDecomposer to annotate centromeric sequences on each clustering stage.
 
 For more details please see:
+https://github.com/ablab/HORmon/tree/centromere-architect
 https://github.com/ablab/stringdecomposer
 
 2. HORmon uses edlib library to calculate monomer alignment identities.
