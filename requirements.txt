@@ -6,3 +6,4 @@ setuptools
 networkx
 pygraphviz
 stringdecomposer
+scipy
