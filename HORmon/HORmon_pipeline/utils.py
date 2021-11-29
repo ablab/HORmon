@@ -209,9 +209,17 @@ def updateMonomersByMonomerBlocks(mns, outdir, tsv_res, path_seq, threads):
 
         blf = os.path.join(outdir, "blocks_" + str(cid) + ".fa")
         save_seqs(mn_blocks, blf)
-        mn.seq = Seq(get_consensus_seq(blf, threads))
+        if len(mn_blocks) == 0:
+            mn.seq = ""
+            continue
+
+        if len(mn_blocks) == 1:
+            mn.seq = mn_blocks[0]
+        else:
+            mn.seq = Seq(get_consensus_seq(blf, threads))
         cid += 1
 
+    mns = [mn for mn in mns if mn.seq != ""]
     savemn(os.path.join(outdir, "updated_mn.fa"), mns)
     sd_tsv = run_SD(os.path.join(outdir, "updated_mn.fa"), path_seq, outdir, threads)
     return mns, os.path.join(outdir, "updated_mn.fa"), sd_tsv

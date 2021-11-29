@@ -153,7 +153,7 @@ def main():
         G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, eDir,
                                          nodeThr=args.vertThr,
                                          edgeThr=getMonomerGraphEdgeThr(fdec, args), IAmn=args.IAmn)
-        hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, fdec, getMonomerGraphEdgeThr(fdec, args))
+        hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, fdec, getMonomerGraphEdgeThr(fdec, args), log)
         SG = smpGr.BuildSimpleGraph({}, args.seq, fdec, mon_path, edgeThr=getMonomerGraphEdgeThr(fdec, args), IAmn=args.IAmn)
         dmg.DrawMonomerGraph(SG, os.path.join(args.outdir, "finalMnUpdate"), "simpl_graph")
 

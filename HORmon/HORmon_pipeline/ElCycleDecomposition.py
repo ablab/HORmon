@@ -73,15 +73,22 @@ def get_blocks(trpl, path_seq, tsv_res):
                         blocks[-1] = rc(blocks[-1])
     return blocks
 
-def SplitMonomers(MnToSplit, mnpath,  sdtsv, path_seq, outd):
+def SplitMonomers(MnToSplit, mnpath,  sdtsv, path_seq, outd, log):
     mnlist = utils.load_fasta(mnpath)
     for mn in MnToSplit.keys():
         resmns = [mon for mon in mnlist if mon.id != mn]
         ci = 0
         for ctx in MnToSplit[mn]:
+            log.info("Split node: " + str(ctx[0]) + " " + str(mn) + " " + str(ctx[1]), indent=1)
             blocks = get_blocks((ctx[0], mn, ctx[1]), path_seq, sdtsv)
-            save_seqs(blocks, os.path.join(outd, "blseq.fa"))
-            consensus = get_consensus_seq(os.path.join(outd, "blseq.fa"), 16)
+            if len(blocks) == 0:
+                continue
+
+            consensus = blocks[0]
+            if len(blocks) > 1:
+                save_seqs(blocks, os.path.join(outd, "blseq.fa"))
+                consensus = get_consensus_seq(os.path.join(outd, "blseq.fa"), 16)
+
             name = mn + "." + str(ci)
             ci += 1
             new_record = SeqRecord(Seq(consensus), id=name, name=name, description="")
@@ -115,7 +122,7 @@ def ElCycleSplit(mn_path, seq_path, sd_tsv, outd, G, hybridSet, threads, log):
                 spltNode[x].append((elrCirc[i - 1][0], elrCirc[i][1]))
 
         log.info("NODEs to split: " + str(spltNode), indent=1)
-        SplitMonomers(spltNode, mn_path, sd_tsv, seq_path, outElC)
+        SplitMonomers(spltNode, mn_path, sd_tsv, seq_path, outElC, log)
         tsv_res = run_SD(os.path.join(outElC, "mn.fa"), seq_path, outElC, threads)
         return outElC
     else:
