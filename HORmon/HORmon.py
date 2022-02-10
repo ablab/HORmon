@@ -26,6 +26,7 @@ import HORmon.HORmon_pipeline.MonoRun as monorun
 import HORmon.HORmon_pipeline.BuildSimpleGraph as smpGr
 import HORmon.HORmon_pipeline.TriplesMatrix as tm
 import HORmon.HORmon_pipeline.logger as logger
+from HORmon.HORmon_pipeline.utils import run_SD
 import HORmon.hormon_extract_hors as hormon_extract_hors
 import HORmon.build_horconsensus as build_horconsensus
 import HORmon.convert2bed as convert2bed
@@ -35,6 +36,7 @@ def parse_args():
     parser.add_argument("--mon", dest="mon", help="path to initial monomers", required=True)
     parser.add_argument("--seq", dest="seq", help="path to centromere sequence", required=True)
     parser.add_argument("--cen-id", dest="cenid", help="chromosome id", default="1")
+    parser.add_argument("--CE_disable", dest="CEanable", help="Disable inference monomers/HORs corresponding with CE postulate(not split/merge monomers)", default=True, action="store_false")
     parser.add_argument("--monomer-thr", dest="vertThr", help="Minimum weight for valuable monomers", type=int, default=100)
     parser.add_argument("--min-edge-multiplicity",
                         "--edge-thr",
@@ -105,12 +107,20 @@ def main():
                                  nodeThr=args.vertThr,
                                  edgeThr=getMonomerGraphEdgeThr(sdout, args))
 
-    mergeSplDir = os.path.join(args.outdir, "merge_split")
-    if (not os.path.exists(mergeSplDir)):
-        os.makedirs(mergeSplDir)
+    mon, mon_path = valMon, valMonPath
+    if args.CEanable:
+        mergeSplDir = os.path.join(args.outdir, "merge_split")
+        if (not os.path.exists(mergeSplDir)):
+            os.makedirs(mergeSplDir)
 
-    log.info("=== Merge and Split Monomers STAGE ===")
-    mon, mon_path = MergeSplit.MergeSplitMonomers(valMonPath, args.seq, mergeSplDir, args.threads, args.cenid, log)
+        log.info("=== Merge and Split Monomers STAGE ===")
+        mon, mon_path = MergeSplit.MergeSplitMonomers(valMonPath, args.seq, mergeSplDir, args.threads, args.cenid, log)
+    else:
+        log.info("=== Merge and Split Monomers STAGE (skip) ===")
+        outdir = os.path.join(os.path.dirname(mon_path), "i0", "InitSD")
+        run_SD(mon_path, args.seq, outdir, args.threads)
+        copyfile(os.path.join(outdir, "final_decomposition.tsv"),
+                        os.path.join(os.path.dirname(mon_path), "fdec.tsv"))
 
     log.info("=== Build MonomerGraph for Valuable monomers STAGE ===")
     MonDir = os.path.dirname(mon_path)
@@ -118,11 +128,14 @@ def main():
     dmg.BuildAndDrawMonomerGraph(valMon, sdout, valMonDir, nodeThr=args.vertThr,
                                  edgeThr=getMonomerGraphEdgeThr(sdout, args))
 
-    log.info("=== Build MonomerGRaph for initial monomers STAGE ===")
-    sdout =  os.path.join(MonDir, "fdec.tsv")
-    G = dmg.BuildAndDrawMonomerGraph(mon_path, sdout, MonDir,
+    if args.CEanable:
+        log.info("=== Build MonomerGRaph for initial monomers STAGE ===")
+        sdout =  os.path.join(MonDir, "fdec.tsv")
+        G = dmg.BuildAndDrawMonomerGraph(mon_path, sdout, MonDir,
                                      nodeThr=args.vertThr,
                                      edgeThr=getMonomerGraphEdgeThr(sdout, args), IAmn=args.IAmn)
+    else:
+        log.info("=== Build MonomerGraph for initial monomers SRAGE(skip) ===")
 
 
     log.info("=== Build Simplified MonomerGraph STAGE ===")
@@ -141,21 +154,24 @@ def main():
     fdec = os.path.join(MonDir, "fdec.tsv")
     hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, fdec, getMonomerGraphEdgeThr(fdec, args), log)
 
-    log.info("\n=== Split by Eulerian Cycle STAGE ===")
-    eDir = elCycl.ElCycleSplit(mon_path, args.seq, fdec, args.outdir, G, hybridSet, args.threads, log)
-    if eDir is not None:
-        mon_path = os.path.join(eDir, "mn.fa")
-        fdec = os.path.join(eDir, "final_decomposition.tsv")
+    if args.CEanable:
+        log.info("\n=== Split by Eulerian Cycle STAGE ===")
+        eDir = elCycl.ElCycleSplit(mon_path, args.seq, fdec, args.outdir, G, hybridSet, args.threads, log)
+        if eDir is not None:
+            mon_path = os.path.join(eDir, "mn.fa")
+            fdec = os.path.join(eDir, "final_decomposition.tsv")
 
-        mns = utils.load_fasta(mon_path)
-        mns, mon_path, fdec = utils.updateMonomersByMonomerBlocks(mns, os.path.join(args.outdir, "finalMnUpdate"), fdec, args.seq, int(args.threads))
+            mns = utils.load_fasta(mon_path)
+            mns, mon_path, fdec = utils.updateMonomersByMonomerBlocks(mns, os.path.join(args.outdir, "finalMnUpdate"), fdec, args.seq, int(args.threads))
 
-        G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, eDir,
-                                         nodeThr=args.vertThr,
-                                         edgeThr=getMonomerGraphEdgeThr(fdec, args), IAmn=args.IAmn)
-        hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, fdec, getMonomerGraphEdgeThr(fdec, args), log)
-        SG = smpGr.BuildSimpleGraph({}, args.seq, fdec, mon_path, edgeThr=getMonomerGraphEdgeThr(fdec, args), IAmn=args.IAmn)
-        dmg.DrawMonomerGraph(SG, os.path.join(args.outdir, "finalMnUpdate"), "simpl_graph")
+            G = dmg.BuildAndDrawMonomerGraph(mon_path, fdec, eDir,
+                                             nodeThr=args.vertThr,
+                                             edgeThr=getMonomerGraphEdgeThr(fdec, args), IAmn=args.IAmn)
+            hybridSet, hybridDict = hybrid.getHybridINFO(mon_path, fdec, getMonomerGraphEdgeThr(fdec, args), log)
+            SG = smpGr.BuildSimpleGraph({}, args.seq, fdec, mon_path, edgeThr=getMonomerGraphEdgeThr(fdec, args), IAmn=args.IAmn)
+            dmg.DrawMonomerGraph(SG, os.path.join(args.outdir, "finalMnUpdate"), "simpl_graph")
+    else:
+        log.info("\n=== Split by Eulerian Cycle STAGE(skip) ===")
 
     log.info("\n=== Detect HORs STAGE ===")
     SG = smpGr.BuildSimpleGraph(hybridSet, args.seq, fdec, mon_path, edgeThr=getMonomerGraphEdgeThr(fdec, args))
