@@ -173,6 +173,7 @@ def SplitIteration(iterNum, seq_path, outdir, monsPath, thread=1, log=None):
     if not os.path.exists(odir):
         os.makedirs(odir)
 
+    tsv_res = run_SD(monsPath, seq_path, os.path.join(odir, "InitSD"), thread)
     k_cnt = TriplesMatrix.calc_mn_order_stat(tsv_res, maxk=3)
 
     exchTrp = TriplesMatrix.SplitAllMn(k_cnt[2], k_cnt[1])
