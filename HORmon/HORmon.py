@@ -100,6 +100,7 @@ def main():
         os.makedirs(os.path.join(args.outdir, "init"))
 
     sdout = os.path.join(valMonDir, "final_decomposition.tsv")
+
     dmg.BuildAndDrawMonomerGraph(args.mon, sdout,
                                  os.path.join(args.outdir, "init"),
                                  nodeThr=args.vertThr,

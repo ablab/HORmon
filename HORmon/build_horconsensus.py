@@ -47,9 +47,9 @@ def make_record(seq, name, sid, d=""):
 
 def save_fasta(filename, orfs):
     with open(filename, "w") as output_handle:
-        #SeqIO.write(orfs, output_handle, "fasta")
-        fasta_out = FastaIO.FastaWriter(output_handle, wrap=None)
-        fasta_out.write_file(orfs)
+        SeqIO.write(orfs, output_handle, "fasta")
+        #fasta_out = FastaIO.FastaWriter(output_handle, wrap=None)
+        #fasta_out.write_file(orfs)
 
 def load_monodec(cen):
     dec = []

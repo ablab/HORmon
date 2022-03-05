@@ -82,6 +82,14 @@ def SplitMn(trpl, nnm, odir, mons, path_seq):
     resmns = [mn for mn in mons if mn.id != trpl[1]]
 
     block1, block2 = get_blocks(trpl, path_seq, tsv_res)
+    print("Split block size 1:", len(block1), "; split block size 2: ", len(block2))
+
+    if (len(block2) * 8  < len(block1)):
+        return [], False
+
+    if (len(block1) * 8 < len(block2)):
+        return [], False
+
     save_seqs(block1, os.path.join(odir, "blseq.fa"))
     consensus = get_consensus_seq(os.path.join(odir, "blseq.fa"), 16)
     name = trpl[1] + ".0"
@@ -94,7 +102,7 @@ def SplitMn(trpl, nnm, odir, mons, path_seq):
     new_record = SeqRecord(Seq(consensus), id=name, name=name, description="")
     resmns.append(new_record)
 
-    return resmns
+    return resmns, True
 
 
 def MergeIteration(iterNum, seq_path, outdir, monsPath, thread=1, log=None):
@@ -181,8 +189,10 @@ def SplitIteration(iterNum, seq_path, outdir, monsPath, thread=1, log=None):
         log.info("SPLIT", indent=2)
         for key in exchTrp.keys():
             log.info("Triplet to split: " + str(key) + " new mn name:"  + str(exchTrp[key]), indent=3)
+            resmn, success = SplitMn(key, exchTrp[key], odir, mons, seq_path)
+            if (success == False):
+                continue
             cntSplit += 1
-            resmn = SplitMn(key, exchTrp[key], odir, mons, seq_path)
             utils.savemn(os.path.join(odir, "mn.fa"), resmn)
             return True
     return False
