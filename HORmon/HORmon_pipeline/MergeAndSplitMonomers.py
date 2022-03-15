@@ -24,6 +24,7 @@ from HORmon.HORmon_pipeline.utils import save_seqs
 from HORmon.HORmon_pipeline.utils import get_consensus_seq
 import HORmon.HORmon_pipeline.TriplesMatrix as TriplesMatrix
 
+MIN_VALUABLE_MN_WIEGHT = 5
 
 def getMnSim(mon):
     sim = {}
@@ -82,12 +83,12 @@ def SplitMn(trpl, nnm, odir, mons, path_seq):
     resmns = [mn for mn in mons if mn.id != trpl[1]]
 
     block1, block2 = get_blocks(trpl, path_seq, tsv_res)
-    print("Split block size 1:", len(block1), "; split block size 2: ", len(block2))
+    print("Split block size 1:", len(block1), "; split block size 2: ", len(block2), "; min val mn weight:", MIN_VALUABLE_MN_WIEGHT)
 
-    if (len(block2) * 8  < len(block1)):
+    if (len(block1) < MIN_VALUABLE_MN_WIEGHT):
         return [], False
 
-    if (len(block1) * 8 < len(block2)):
+    if (len(block2) < MIN_VALUABLE_MN_WIEGHT):
         return [], False
 
     save_seqs(block1, os.path.join(odir, "blseq.fa"))
@@ -119,6 +120,12 @@ def MergeIteration(iterNum, seq_path, outdir, monsPath, thread=1, log=None):
         os.makedirs(odir)
 
     tsv_res = run_SD(monsPath, seq_path, os.path.join(odir, "InitSD"), thread)
+
+    if iterNum == 0:
+        global MIN_VALUABLE_MN_WIEGHT
+        MIN_VALUABLE_MN_WIEGHT = min([cnt for v, cnt in TriplesMatrix.calc_mn_order_stat(tsv_res, maxk=2)[0].items()])
+        log.info("Minimum valuable monomer weight: " + str(MIN_VALUABLE_MN_WIEGHT))
+
     k_cnt = TriplesMatrix.calc_mn_order_stat(tsv_res, maxk=3)
     posscore, cenvec = TriplesMatrix.handleAllMn(k_cnt[2], k_cnt[1], thr=0)
 
