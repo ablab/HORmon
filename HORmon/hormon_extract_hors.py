@@ -86,7 +86,7 @@ def load_horascycle(filename):
             hor_cnt += 1
             print("Loaded HOR:", hor_lst)
 
-    hors["Mono"] = ["Mono", 1, hor_cnt + 1]
+    hors["Mono"] = [{}, 1, hor_cnt + 1]
     return hors, mono_mp
 
 def decompose(monodec, hors, rev=False):

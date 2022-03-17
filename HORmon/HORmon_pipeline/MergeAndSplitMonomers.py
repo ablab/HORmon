@@ -24,6 +24,7 @@ from HORmon.HORmon_pipeline.utils import save_seqs
 from HORmon.HORmon_pipeline.utils import get_consensus_seq
 import HORmon.HORmon_pipeline.TriplesMatrix as TriplesMatrix
 
+MIN_VALUABLE_MN_WIEGHT = 5
 
 def getMnSim(mon):
     sim = {}
@@ -82,6 +83,14 @@ def SplitMn(trpl, nnm, odir, mons, path_seq):
     resmns = [mn for mn in mons if mn.id != trpl[1]]
 
     block1, block2 = get_blocks(trpl, path_seq, tsv_res)
+    print("Split block size 1:", len(block1), "; split block size 2: ", len(block2), "; min val mn weight:", MIN_VALUABLE_MN_WIEGHT)
+
+    if (len(block1) < MIN_VALUABLE_MN_WIEGHT):
+        return [], False
+
+    if (len(block2) < MIN_VALUABLE_MN_WIEGHT):
+        return [], False
+
     save_seqs(block1, os.path.join(odir, "blseq.fa"))
     consensus = get_consensus_seq(os.path.join(odir, "blseq.fa"), 16)
     name = trpl[1] + ".0"
@@ -94,10 +103,10 @@ def SplitMn(trpl, nnm, odir, mons, path_seq):
     new_record = SeqRecord(Seq(consensus), id=name, name=name, description="")
     resmns.append(new_record)
 
-    return resmns
+    return resmns, True
 
 
-def Iteration(iterNum, seq_path, outdir, monsPath, thread=1, log=None):
+def MergeIteration(iterNum, seq_path, outdir, monsPath, thread=1, log=None):
     log.info("Iteration #" + str(iterNum), indent=1)
     global tsv_res
     global cntMerge
@@ -111,6 +120,12 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1, log=None):
         os.makedirs(odir)
 
     tsv_res = run_SD(monsPath, seq_path, os.path.join(odir, "InitSD"), thread)
+
+    if iterNum == 0:
+        global MIN_VALUABLE_MN_WIEGHT
+        MIN_VALUABLE_MN_WIEGHT = min([cnt for v, cnt in TriplesMatrix.calc_mn_order_stat(tsv_res, maxk=2)[0].items()])
+        log.info("Minimum valuable monomer weight: " + str(MIN_VALUABLE_MN_WIEGHT))
+
     k_cnt = TriplesMatrix.calc_mn_order_stat(tsv_res, maxk=3)
     posscore, cenvec = TriplesMatrix.handleAllMn(k_cnt[2], k_cnt[1], thr=0)
 
@@ -133,7 +148,8 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1, log=None):
     bstm, bp = get_best(posscore)
     if bp > 0.4:
         cntMerge += 1
-        log.info("MERGE Midle position score=" + str(bp) + " similaroty score= " + str(sim[(mons[bstm[0]].id, mons[bstm[1]].id)]), indent=2)
+        log.info("MERGE Midle position score=" + str(bp) + " similaroty score= " + str(
+            sim[(mons[bstm[0]].id, mons[bstm[1]].id)]), indent=2)
         resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path, log)
         utils.savemn(os.path.join(odir, "mn.fa"), resmn)
         return True
@@ -142,7 +158,8 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1, log=None):
     bstm, bp = get_best(posscore)
     if bp > 0.4:
         cntMerge += 1
-        log.info("MERGE Prefix position score=" + str(bp) + " similaroty score=" + str(sim[(mons[bstm[0]].id, mons[bstm[1]].id)]), indent=2)
+        log.info("MERGE Prefix position score=" + str(bp) + " similaroty score=" + str(
+            sim[(mons[bstm[0]].id, mons[bstm[1]].id)]), indent=2)
         resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path, log)
         utils.savemn(os.path.join(odir, "mn.fa"), resmn)
         return True
@@ -151,18 +168,38 @@ def Iteration(iterNum, seq_path, outdir, monsPath, thread=1, log=None):
     bstm, bp = get_best(posscore)
     if bp > 0.4:
         cntMerge += 1
-        log.info("MERGE Suffix position score=" + str(bp) + " similaroty score=" + str(sim[(mons[bstm[0]].id, mons[bstm[1]].id)]), indent=2)
+        log.info("MERGE Suffix position score=" + str(bp) + " similaroty score=" + str(
+            sim[(mons[bstm[0]].id, mons[bstm[1]].id)]), indent=2)
         resmn = MergeMonomers(mons[bstm[0]], mons[bstm[1]], odir, mons, seq_path, log)
         utils.savemn(os.path.join(odir, "mn.fa"), resmn)
         return True
+    return False
+
+
+def SplitIteration(iterNum, seq_path, outdir, monsPath, thread=1, log=None):
+    log.info("Iteration #" + str(iterNum), indent=1)
+    global tsv_res
+    global cntMerge
+    global cntSplit
+
+    mons = unique(load_fasta(monsPath))
+
+    odir = os.path.join(outdir, "i" + str(iterNum))
+    if not os.path.exists(odir):
+        os.makedirs(odir)
+
+    tsv_res = run_SD(monsPath, seq_path, os.path.join(odir, "InitSD"), thread)
+    k_cnt = TriplesMatrix.calc_mn_order_stat(tsv_res, maxk=3)
 
     exchTrp = TriplesMatrix.SplitAllMn(k_cnt[2], k_cnt[1])
     if len(exchTrp) > 0:
         log.info("SPLIT", indent=2)
         for key in exchTrp.keys():
             log.info("Triplet to split: " + str(key) + " new mn name:"  + str(exchTrp[key]), indent=3)
+            resmn, success = SplitMn(key, exchTrp[key], odir, mons, seq_path)
+            if (success == False):
+                continue
             cntSplit += 1
-            resmn = SplitMn(key, exchTrp[key], odir, mons, seq_path)
             utils.savemn(os.path.join(odir, "mn.fa"), resmn)
             return True
     return False
@@ -176,7 +213,12 @@ def MergeSplitMonomers(mns_path, seq_path, outdir, thr, cenid, log):
 
     shutil.copyfile(mns_path, os.path.join(outdir, "mn.fa"))
     iterNum = 0
-    while (Iteration(iterNum, seq_path, outdir, mns_path, thr, log=log)):
+    while (MergeIteration(iterNum, seq_path, outdir, mns_path, thr, log=log)):
+        iterNum += 1
+        mns_path = os.path.join(outdir, "i" + str(iterNum - 1), "mn.fa")
+        shutil.copyfile(mns_path, os.path.join(outdir, "mn.fa"))
+
+    while (SplitIteration(iterNum, seq_path, outdir, mns_path, thr, log=log)):
         iterNum += 1
         mns_path = os.path.join(outdir, "i" + str(iterNum - 1), "mn.fa")
         shutil.copyfile(mns_path, os.path.join(outdir, "mn.fa"))

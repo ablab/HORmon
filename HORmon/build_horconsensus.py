@@ -48,7 +48,7 @@ def make_record(seq, name, sid, d=""):
 def save_fasta(filename, orfs):
     with open(filename, "w") as output_handle:
         SeqIO.write(orfs, output_handle, "fasta")
-        #fasta_out = FastaIO.FastaWriter(output_handle)
+        #fasta_out = FastaIO.FastaWriter(output_handle, wrap=None)
         #fasta_out.write_file(orfs)
 
 def load_monodec(cen):
@@ -302,12 +302,14 @@ def divide_into_monomers(hors_lst, hors, monomers, horfile, monofile, outtsv, lo
           save_fasta(horfile, triple_hors)
           decomposition = run(horfile, monofile, "1", outtsv[:-len(".tsv")], log)
           inHOR, start_shift = False, 0
-          newhor_seq = ""
+          newhor_seq = Seq("")
 
           if log is None:
               print(start_mono, hor_len, len(h.seq))
           else:
               log.info("Start monomer=" + str(start_mono) + ", HOR len(#mon)=" + str(hor_len) + ", HOR len(bp)=" + str(len(h.seq)), indent=2)
+
+          mono_num = 0
           for ln in decomposition.split("\n")[1:-1]:
               ref, mono, start, end, score = ln.split("\t")[:5]
               if mono == start_mono:
@@ -317,16 +319,17 @@ def divide_into_monomers(hors_lst, hors, monomers, horfile, monofile, outtsv, lo
                   else:
                       log.info("Start monomer shift=" + str(start_shift), indent=2)
 
-              if inHOR and len(res) < hor_len:
+              if inHOR and mono_num < hor_len:
                   if log is None:
                       print(mono, ref + ":" + str(int(start) - start_shift) + "-" + str(int(end) + 1 - start_shift), len(res) )
                   else:
                       log.info("Monomer# " + str(len(res)) + ": " + mono + " " + ref + ":" + str(int(start) - start_shift) + "-" + str(int(end) + 1 - start_shift), indent=2)
-
+                  mono_num += 1
                   res.append(make_record(triple_hors[0].seq[int(start): int(end) + 1], mono, mono, ref + ":" + str(int(start) - start_shift) + "-" + str(int(end) + 1 - start_shift) ))
                   r, g, b = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
                   bed.append("\t".join([ref, str(int(start) - start_shift), str(int(end) + 1 - start_shift), mono, str(int(float(score))), "+", str(int(start) - start_shift), str(int(end) + 1 - start_shift), ",".join([str(r), str(g), str(b)]) ]))
                   newhor_seq += triple_hors[0].seq[int(start): int(end) + 1]
+
           hors_res.append(make_record(newhor_seq, h.id, h.id, str(len(newhor_seq)) + "bp " + ",".join(hors_lst[i][1]) ))
     return hors_res, res, bed
 

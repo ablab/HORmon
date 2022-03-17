@@ -102,6 +102,7 @@ def main():
         os.makedirs(os.path.join(args.outdir, "init"))
 
     sdout = os.path.join(valMonDir, "final_decomposition.tsv")
+
     dmg.BuildAndDrawMonomerGraph(args.mon, sdout,
                                  os.path.join(args.outdir, "init"),
                                  nodeThr=args.vertThr,
@@ -136,6 +137,23 @@ def main():
                                      edgeThr=getMonomerGraphEdgeThr(sdout, args), IAmn=args.IAmn)
     else:
         log.info("=== Build MonomerGraph for initial monomers SRAGE(skip) ===")
+
+    log.info("=== Build MonomerGRaph for monomers after split/merge STAGE ===")
+    sdout =  os.path.join(MonDir, "fdec.tsv")
+    print("Edge Thr:", getMonomerGraphEdgeThr(sdout, args))
+    G = dmg.BuildAndDrawMonomerGraph(mon_path, sdout, MonDir,
+                                     nodeThr=args.vertThr,
+                                     edgeThr=getMonomerGraphEdgeThr(sdout, args), IAmn=args.IAmn)
+    for dirname in os.listdir(MonDir):
+        if os.path.isdir(os.path.join(MonDir, dirname)):
+            if dirname == "i0":
+                continue
+            pdir = "i" + str(int(dirname[1:]) - 1)
+            dmg.BuildAndDrawMonomerGraph(os.path.join(MonDir, pdir, "mn.fa"),
+                                             os.path.join(MonDir, dirname, "InitSD", "final_decomposition.tsv"),
+                                             os.path.join(MonDir, dirname),
+                                             nodeThr=args.vertThr,
+                                             edgeThr=getMonomerGraphEdgeThr(sdout, args), IAmn=args.IAmn)
 
 
     log.info("=== Build Simplified MonomerGraph STAGE ===")
