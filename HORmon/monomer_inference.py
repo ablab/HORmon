@@ -99,8 +99,8 @@ def parse_args():
                         type=float, default=5, required=False)
     parser.add_argument('--maxDiv', '--max-divergence',
                         help='max divergence in identity for monomeric-block [default=25]',
-                        type=float, default=40, required=False)
-    parser.add_argument("--min-cluster-size", dest="min_clst", type=int, default=1, help=
+                        type=float, default=25, required=False)
+    parser.add_argument("--min-cluster-size", dest="min_clst", type=int, default=2, help=
                                                                     "When maximum size of cluster will be less "\
                                                                     "MIN_CLST the monomer inferense will finished "\
                                                                     "[default=2]")
